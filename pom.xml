@@ -20,6 +20,7 @@
         </quarkus.platform.group-id>
         <quarkus.platform.version>2.2.2.Final</quarkus.platform.version>
         <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
+        <auto-value.version>1.8.2</auto-value.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -33,6 +34,18 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+        <dependency>
+            <!-- see https://github.com/42BV/beanmapper#maven-dependency -->
+            <groupId>io.beanmapper</groupId>
+            <artifactId>beanmapper</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <!-- see https://github.com/google/auto/blob/master/value/userguide/index.md#with-maven -->
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value-annotations</artifactId>
+            <version>${auto-value.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-opentracing</artifactId>
@@ -103,6 +116,14 @@
                 <version>${compiler-plugin.version}</version>
                 <configuration>
                     <parameters>${maven.compiler.parameters}</parameters>
+                    <annotationProcessorPaths>
+                        <!-- see https://github.com/google/auto/blob/master/value/userguide/index.md#with-maven -->
+                        <path>
+                            <groupId>com.google.auto.value</groupId>
+                            <artifactId>auto-value</artifactId>
+                            <version>${auto-value.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
