@@ -41,12 +41,6 @@
             <version>3.1.0</version>
         </dependency>
         <dependency>
-            <!-- see https://github.com/google/auto/blob/master/value/userguide/index.md#with-maven -->
-            <groupId>com.google.auto.value</groupId>
-            <artifactId>auto-value-annotations</artifactId>
-            <version>${auto-value.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-opentracing</artifactId>
         </dependency>
@@ -120,14 +114,6 @@
                 <version>${compiler-plugin.version}</version>
                 <configuration>
                     <parameters>${maven.compiler.parameters}</parameters>
-                    <annotationProcessorPaths>
-                        <!-- see https://github.com/google/auto/blob/master/value/userguide/index.md#with-maven -->
-                        <path>
-                            <groupId>com.google.auto.value</groupId>
-                            <artifactId>auto-value</artifactId>
-                            <version>${auto-value.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
