@@ -12,4 +12,8 @@ public class TBalanceTransactionRepository implements PanacheRepository<TBalance
     public TBalanceTransaction findLatest(BalanceRequest balanceRequest) {
         return find("playerId", Sort.descending("balanceTransactionPk"), balanceRequest.playerId).firstResult();
     }
+
+    public TBalanceTransaction findLastBy(String playerId) {
+        return find("playerId", Sort.descending("balanceTransactionPk"), playerId).firstResult();
+    }
 }
