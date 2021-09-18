@@ -5,15 +5,19 @@ import com.darongmean.h2db.TBalanceTransaction;
 import com.darongmean.h2db.TBalanceTransactionRepository;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
+import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 
 import javax.inject.Inject;
+import javax.persistence.PersistenceException;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 public class H2DBTest {
@@ -36,8 +40,23 @@ public class H2DBTest {
 
         tBalanceTransactionRepository.persist(tBalanceTransaction);
 
-        Assertions.assertTrue(tBalanceTransactionRepository.isPersistent(tBalanceTransaction));
-        Assertions.assertTrue(tBalanceTransaction.getBalanceTransactionPk() > 0);
+        assertTrue(tBalanceTransactionRepository.isPersistent(tBalanceTransaction));
+        assertTrue(tBalanceTransaction.getBalanceTransactionPk() > 0);
+    }
+
+    @RepeatedTest(1000)
+    @TestTransaction
+    void testThrowExceptionGivenTransactionIdNotUnique() {
+        long expectedCount = Arbitraries.longs().greaterOrEqual(2).sample();
+        String reusedTransactionId = Generator.genTransactionId().sample();
+
+        assertThrows(PersistenceException.class, () -> {
+            for (int i = 0; i < expectedCount; i++) {
+                TBalanceTransaction sample = genNonPersistedBalanceTransaction().sample();
+                sample.setTransactionId(reusedTransactionId);
+                tBalanceTransactionRepository.persist(sample);
+            }
+        });
     }
 
     private Arbitrary<TBalanceTransaction> genNonPersistedBalanceTransaction() {
@@ -49,7 +68,7 @@ public class H2DBTest {
 
     private void assertGenerateValidData(TBalanceTransaction tBalanceTransaction) {
         Set<ConstraintViolation<TBalanceTransaction>> violations = validator.validate(tBalanceTransaction);
-        Assertions.assertTrue(violations.isEmpty(),
+        assertTrue(violations.isEmpty(),
                 "Please change the test. "
                         + violations.stream()
                         .map(cv -> cv.getPropertyPath() + " " + cv.getMessage())
