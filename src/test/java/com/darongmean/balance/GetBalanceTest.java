@@ -8,13 +8,9 @@ import net.jqwik.api.Property;
 import net.jqwik.api.lifecycle.BeforeTry;
 import org.mockito.Mockito;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class GetBalanceTest {
-    Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     TBalanceTransactionRepository mockRepo;
 
     @BeforeTry
@@ -27,7 +23,7 @@ class GetBalanceTest {
         BalanceRequest balanceRequest = new BalanceRequest();
         balanceRequest.playerId = Arbitraries.strings().sample();
 
-        GetBalance getBalance = new GetBalance(mockRepo, validator);
+        GetBalance getBalance = new GetBalance(mockRepo);
         getBalance.execute(balanceRequest);
 
         assertTrue(getBalance.hasError());
@@ -43,7 +39,7 @@ class GetBalanceTest {
         TBalanceTransaction sample = Generator.genTBalanceTransaction().sample();
         Mockito.when(mockRepo.findLastByPlayerId(balanceRequest.playerId)).thenReturn(sample);
 
-        GetBalance getBalance = new GetBalance(mockRepo, validator);
+        GetBalance getBalance = new GetBalance(mockRepo);
         getBalance.execute(balanceRequest);
 
         assertFalse(getBalance.hasError());
@@ -52,6 +48,5 @@ class GetBalanceTest {
 
         assertEquals(sample.getPlayerId(), getBalance.getBalanceResponse().playerId);
         assertEquals(sample.getTotalBalance(), getBalance.getBalanceResponse().totalBalance);
-        assertEquals(sample.getCreatedAt(), getBalance.getBalanceResponse().createdAt);
     }
 }

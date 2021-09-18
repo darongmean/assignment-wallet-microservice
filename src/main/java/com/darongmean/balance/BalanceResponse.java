@@ -6,5 +6,4 @@ import java.time.ZonedDateTime;
 public class BalanceResponse {
     public String playerId;
     public BigDecimal totalBalance;
-    public ZonedDateTime createdAt;
 }
