@@ -16,8 +16,7 @@ import javax.validation.Validator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class H2DBTest {
@@ -44,10 +43,10 @@ public class H2DBTest {
         assertTrue(tBalanceTransaction.getBalanceTransactionPk() > 0);
     }
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     @TestTransaction
     void testThrowExceptionGivenTransactionIdNotUnique() {
-        long expectedCount = Arbitraries.longs().greaterOrEqual(2).sample();
+        long expectedCount = Arbitraries.longs().greaterOrEqual(2).lessOrEqual(100).sample();
         String reusedTransactionId = Generator.genTransactionId().sample();
 
         assertThrows(PersistenceException.class, () -> {
@@ -57,6 +56,34 @@ public class H2DBTest {
                 tBalanceTransactionRepository.persist(sample);
             }
         });
+    }
+
+    @RepeatedTest(100)
+    @TestTransaction
+    void testFindLastByPlayerId() {
+        long count = Arbitraries.longs().greaterOrEqual(0).lessOrEqual(100).sample();
+        String playerId = Generator.genPlayerId().sample();
+        TBalanceTransaction lastTransaction = assumeSomePlayerTransactionArePersisted(count, playerId);
+
+        TBalanceTransaction actualTransaction = tBalanceTransactionRepository.findLastByPlayerId(playerId);
+
+        assertEquals(lastTransaction, actualTransaction);
+        if (lastTransaction != null) {
+            assertEquals(lastTransaction.getBalanceTransactionPk(), actualTransaction.getBalanceTransactionPk());
+            assertEquals(lastTransaction.getCreatedAt(), actualTransaction.getCreatedAt());
+        }
+    }
+
+    private TBalanceTransaction assumeSomePlayerTransactionArePersisted(long count, String playerId) {
+        TBalanceTransaction lastTransaction = null;
+
+        for (int i = 0; i < count; i++) {
+            TBalanceTransaction sample = genNonPersistedBalanceTransaction().sample();
+            sample.setPlayerId(playerId);
+            tBalanceTransactionRepository.persist(sample);
+            lastTransaction = sample;
+        }
+        return lastTransaction;
     }
 
     private Arbitrary<TBalanceTransaction> genNonPersistedBalanceTransaction() {
