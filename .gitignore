@@ -38,3 +38,7 @@ nb-configuration.xml
 # Local environment
 .env
 .mvn
+
+# dev
+.h2db/
+.jqwik-database

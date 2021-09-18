@@ -91,6 +91,20 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!-- see https://jqwik.net/docs/1.5.6/user-guide.html#how-to-use -->
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+            <version>1.5.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- see https://jqwik.net/docs/1.5.6/user-guide.html#time-module -->
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik-time</artifactId>
+            <version>1.5.6</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
