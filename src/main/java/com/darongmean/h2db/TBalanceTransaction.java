@@ -23,7 +23,7 @@ public class TBalanceTransaction {
     @PositiveOrZero
     private BigDecimal totalBalance = BigDecimal.ZERO;
     @Digits(integer = 9, fraction = 4)
-    @PositiveOrZero
+    @Positive
     private BigDecimal transactionAmount = BigDecimal.ZERO;
     @NotBlank
     @Length(max = 10)

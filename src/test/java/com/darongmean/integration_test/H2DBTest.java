@@ -2,7 +2,7 @@ package com.darongmean.integration_test;
 
 import com.darongmean.h2db.TBalanceTransaction;
 import com.darongmean.h2db.TBalanceTransactionRepository;
-import com.darongmean.testutil.PropertyBasedTest;
+import com.darongmean.common.Generator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Assertions;
@@ -26,13 +26,13 @@ public class H2DBTest {
     @TestTransaction
     void testNotThrowExceptionWhenPersistValidData() {
         TBalanceTransaction tBalanceTransaction = new TBalanceTransaction();
-        tBalanceTransaction.setPlayerId(PropertyBasedTest.genPlayerId().sample());
-        tBalanceTransaction.setTotalBalance(PropertyBasedTest.genTotalBalance().sample());
-        tBalanceTransaction.setTransactionAmount(PropertyBasedTest.genTransactionAmount().sample());
-        tBalanceTransaction.setTransactionType(PropertyBasedTest.genTransactionType().sample());
-        tBalanceTransaction.setTransactionId(PropertyBasedTest.genTransactionId().sample());
-        tBalanceTransaction.setCreatedAt(PropertyBasedTest.genCreatedAt().sample());
-        tBalanceTransaction.setTraceId(PropertyBasedTest.genTraceId().sample());
+        tBalanceTransaction.setPlayerId(Generator.genPlayerId().sample());
+        tBalanceTransaction.setTotalBalance(Generator.genTotalBalance().sample());
+        tBalanceTransaction.setTransactionAmount(Generator.genTransactionAmount().sample());
+        tBalanceTransaction.setTransactionType(Generator.genTransactionType().sample());
+        tBalanceTransaction.setTransactionId(Generator.genTransactionId().sample());
+        tBalanceTransaction.setCreatedAt(Generator.genCreatedAt().sample());
+        tBalanceTransaction.setTraceId(Generator.genTraceId().sample());
 
         assertGenerateValidData(tBalanceTransaction);
 

@@ -1,4 +1,4 @@
-package com.darongmean.testutil;
+package com.darongmean.common;
 
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-public class PropertyBasedTest {
+public class Generator {
 
     @Provide
     public static Arbitrary<String> genTraceId() {
@@ -29,7 +29,7 @@ public class PropertyBasedTest {
 
     @Provide
     public static BigDecimalArbitrary genTransactionAmount() {
-        return genMoneyAmount();
+        return genMoneyAmount().greaterThan(BigDecimal.ZERO);
     }
 
     private static BigDecimalArbitrary genMoneyAmount() {
