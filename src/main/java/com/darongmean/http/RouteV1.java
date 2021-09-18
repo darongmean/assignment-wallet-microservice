@@ -1,7 +1,6 @@
 package com.darongmean.http;
 
 import com.darongmean.balance.BalanceRequest;
-import com.darongmean.balance.BalanceResponse;
 import com.darongmean.balance.GetBalance;
 import com.darongmean.common.ErrorResponse;
 import com.darongmean.credit.CreditRequest;
@@ -26,10 +25,17 @@ public class RouteV1 {
 
     @GET
     @Path("/balance")
-    public BalanceResponse getBalance(@BeanParam BalanceRequest balanceRequest) {
+    public Response getBalance(@BeanParam BalanceRequest balanceRequest) {
         GetBalance getBalance = new GetBalance(tBalanceTransactionRepository, validator);
         getBalance.execute(balanceRequest);
-        return getBalance.getBalanceResponse();
+
+        if (getBalance.hasError()) {
+            ErrorResponse err = getBalance.getErrorResponse();
+            err.status = 404;
+            return Response.status(err.status).entity(err).build();
+        }
+
+        return Response.ok(getBalance.getBalanceResponse()).build();
     }
 
     @POST
