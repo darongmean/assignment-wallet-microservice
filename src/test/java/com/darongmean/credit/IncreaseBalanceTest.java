@@ -3,8 +3,12 @@ package com.darongmean.credit;
 import com.darongmean.common.Generator;
 import com.darongmean.h2db.TBalanceTransaction;
 import com.darongmean.h2db.TBalanceTransactionRepository;
+import net.jqwik.api.Example;
 import net.jqwik.api.ForAll;
+import net.jqwik.api.From;
 import net.jqwik.api.Property;
+import net.jqwik.api.constraints.Size;
+import net.jqwik.api.constraints.UniqueElements;
 import net.jqwik.api.lifecycle.BeforeTry;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -13,11 +17,11 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class IncreaseBalanceTest extends Generator {
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -29,14 +33,29 @@ class IncreaseBalanceTest extends Generator {
     }
 
     @Property
-    void testProduceValidData(
-            @ForAll("genPlayerId") String playerId,
-            @ForAll("genTransactionId") String transactionId,
-            @ForAll("genTransactionAmount") BigDecimal amount) {
-        CreditRequest creditRequest = new CreditRequest();
-        creditRequest.transactionAmount = amount;
-        creditRequest.transactionId = transactionId;
-        creditRequest.playerId = playerId;
+    void testIncreaseBalanceGivenNeverDoneTransactionBefore(@ForAll("genCreditRequest") CreditRequest creditRequest) {
+        IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
+        increaseBalance.execute(creditRequest);
+
+        assertGenerateValidData(increaseBalance.getNewBalanceTransaction());
+        assertNotNull(increaseBalance.getCreditRepsonse());
+        assertFalse(increaseBalance.hasError());
+        assertEquals(creditRequest.transactionAmount, increaseBalance.getCreditRepsonse().totalBalance);
+    }
+
+    @Property
+    void testIncreaseBalanceGivenPreviousTransactionRecord(
+            @ForAll @UniqueElements @Size(value = 2) List<@From("genTransactionId") String> transactionIds,
+            @ForAll("genTotalBalance") BigDecimal totalBalance,
+            @ForAll("genCreditRequest") CreditRequest creditRequest,
+            @ForAll("genTBalanceTransaction") TBalanceTransaction prevBalanceTransaction) {
+        // arrange to have different transaction ids
+        creditRequest.transactionId = transactionIds.get(0);
+        prevBalanceTransaction.setTransactionId(transactionIds.get(1));
+        // arrange so that totalBalance not too big
+        prevBalanceTransaction.setTotalBalance(totalBalance.subtract(creditRequest.transactionAmount));
+
+        Mockito.when(mockRepo.findLastBy(creditRequest.playerId)).thenReturn(prevBalanceTransaction);
 
         IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
         increaseBalance.execute(creditRequest);
@@ -44,6 +63,23 @@ class IncreaseBalanceTest extends Generator {
         assertGenerateValidData(increaseBalance.getNewBalanceTransaction());
         assertNotNull(increaseBalance.getCreditRepsonse());
         assertFalse(increaseBalance.hasError());
+        assertEquals(totalBalance, increaseBalance.getCreditRepsonse().totalBalance);
+    }
+
+    @Example
+    void testIncreaseBalanceAndTotalBalanceTooBig() {
+        CreditRequest creditRequest = genCreditRequest().sample();
+
+        TBalanceTransaction prevBalanceTransaction = genTBalanceTransaction().sample();
+        prevBalanceTransaction.setTotalBalance(new BigDecimal("999999999.9999"));
+
+        Mockito.when(mockRepo.findLastBy(creditRequest.playerId)).thenReturn(prevBalanceTransaction);
+
+        IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
+        increaseBalance.execute(creditRequest);
+
+        assertNull(increaseBalance.getCreditRepsonse());
+        assertTrue(increaseBalance.hasError());
     }
 
     private void assertGenerateValidData(TBalanceTransaction tBalanceTransaction) {

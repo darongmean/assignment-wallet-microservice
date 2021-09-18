@@ -36,9 +36,26 @@ public class IncreaseBalance {
 
         newBalanceTransaction = initBalanceTransaction(creditRequest);
         addFund(newBalanceTransaction, prevTransaction, creditRequest.transactionAmount);
+        if (dataHasError(newBalanceTransaction)) {
+            errorResponse = initErrorResponse(newBalanceTransaction);
+            return;
+        }
 
         tBalanceTransactionRepository.persist(newBalanceTransaction);
         creditRepsonse = beanMapper.map(newBalanceTransaction, CreditRepsonse.class);
+    }
+
+    private ErrorResponse initErrorResponse(TBalanceTransaction newBalanceTransaction) {
+        Set<ConstraintViolation<TBalanceTransaction>> violations = validator.validate(newBalanceTransaction);
+        ErrorResponse error = new ErrorResponse();
+        error.detail = violations.stream()
+                .map(cv -> cv.getPropertyPath() + " " + cv.getMessage())
+                .collect(Collectors.toList());
+        return error;
+    }
+
+    private boolean dataHasError(TBalanceTransaction newBalanceTransaction) {
+        return !validator.validate(newBalanceTransaction).isEmpty();
     }
 
     private ErrorResponse initErrorResponse(CreditRequest creditRequest) {
@@ -71,6 +88,10 @@ public class IncreaseBalance {
 
     public CreditRepsonse getCreditRepsonse() {
         return creditRepsonse;
+    }
+
+    public ErrorResponse getErrorResponse() {
+        return errorResponse;
     }
 
     public TBalanceTransaction getNewBalanceTransaction() {
