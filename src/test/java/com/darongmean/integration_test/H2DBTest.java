@@ -1,10 +1,11 @@
 package com.darongmean.integration_test;
 
+import com.darongmean.common.Generator;
 import com.darongmean.h2db.TBalanceTransaction;
 import com.darongmean.h2db.TBalanceTransactionRepository;
-import com.darongmean.common.Generator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
+import net.jqwik.api.Arbitrary;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 
@@ -22,24 +23,28 @@ public class H2DBTest {
     @Inject
     Validator validator;
 
-    @RepeatedTest(100)
+    @RepeatedTest(1000)
+    void testGeneratorGenerateValidData() {
+        assertGenerateValidData(Generator.genTBalanceTransaction().sample());
+        assertGenerateValidData(genNonPersistedBalanceTransaction().sample());
+    }
+
+    @RepeatedTest(1000)
     @TestTransaction
     void testNotThrowExceptionWhenPersistValidData() {
-        TBalanceTransaction tBalanceTransaction = new TBalanceTransaction();
-        tBalanceTransaction.setPlayerId(Generator.genPlayerId().sample());
-        tBalanceTransaction.setTotalBalance(Generator.genTotalBalance().sample());
-        tBalanceTransaction.setTransactionAmount(Generator.genTransactionAmount().sample());
-        tBalanceTransaction.setTransactionType(Generator.genTransactionType().sample());
-        tBalanceTransaction.setTransactionId(Generator.genTransactionId().sample());
-        tBalanceTransaction.setCreatedAt(Generator.genCreatedAt().sample());
-        tBalanceTransaction.setTraceId(Generator.genTraceId().sample());
-
-        assertGenerateValidData(tBalanceTransaction);
+        TBalanceTransaction tBalanceTransaction = genNonPersistedBalanceTransaction().sample();
 
         tBalanceTransactionRepository.persist(tBalanceTransaction);
 
         Assertions.assertTrue(tBalanceTransactionRepository.isPersistent(tBalanceTransaction));
         Assertions.assertTrue(tBalanceTransaction.getBalanceTransactionPk() > 0);
+    }
+
+    private Arbitrary<TBalanceTransaction> genNonPersistedBalanceTransaction() {
+        return Generator.genTBalanceTransaction().map(obj -> {
+            obj.setBalanceTransactionPk(null);
+            return obj;
+        });
     }
 
     private void assertGenerateValidData(TBalanceTransaction tBalanceTransaction) {
