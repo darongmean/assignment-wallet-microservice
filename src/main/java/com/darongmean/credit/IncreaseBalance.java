@@ -9,6 +9,7 @@ import io.beanmapper.config.BeanMapperBuilder;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,14 @@ public class IncreaseBalance {
             return;
         }
 
-        TBalanceTransaction prevTransaction = tBalanceTransactionRepository.findLastBy(creditRequest.playerId);
+        long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(creditRequest.transactionId);
+        if (countTransactionIdUsed > 0) {
+            errorResponse = new ErrorResponse();
+            errorResponse.detail = List.of("transactionId must be unique");
+            return;
+        }
+
+        TBalanceTransaction prevTransaction = tBalanceTransactionRepository.findLastByPlayerId(creditRequest.playerId);
 
         newBalanceTransaction = initBalanceTransaction(creditRequest);
         addFund(newBalanceTransaction, prevTransaction, creditRequest.transactionAmount);

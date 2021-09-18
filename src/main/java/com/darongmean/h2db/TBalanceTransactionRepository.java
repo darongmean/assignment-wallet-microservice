@@ -13,7 +13,11 @@ public class TBalanceTransactionRepository implements PanacheRepository<TBalance
         return find("playerId", Sort.descending("balanceTransactionPk"), balanceRequest.playerId).firstResult();
     }
 
-    public TBalanceTransaction findLastBy(String playerId) {
+    public TBalanceTransaction findLastByPlayerId(String playerId) {
         return find("playerId", Sort.descending("balanceTransactionPk"), playerId).firstResult();
+    }
+
+    public long countByTransactionId(String transactionId) {
+        return count("transactionId", transactionId);
     }
 }

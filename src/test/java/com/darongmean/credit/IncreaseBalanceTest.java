@@ -7,6 +7,7 @@ import net.jqwik.api.Example;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.From;
 import net.jqwik.api.Property;
+import net.jqwik.api.constraints.LongRange;
 import net.jqwik.api.constraints.Size;
 import net.jqwik.api.constraints.UniqueElements;
 import net.jqwik.api.lifecycle.BeforeTry;
@@ -49,21 +50,36 @@ class IncreaseBalanceTest extends Generator {
             @ForAll("genTotalBalance") BigDecimal totalBalance,
             @ForAll("genCreditRequest") CreditRequest creditRequest,
             @ForAll("genTBalanceTransaction") TBalanceTransaction prevBalanceTransaction) {
-        // arrange to have different transaction ids
+        // arrange to have different transactionIds
         creditRequest.transactionId = transactionIds.get(0);
         prevBalanceTransaction.setTransactionId(transactionIds.get(1));
         // arrange so that totalBalance not too big
         prevBalanceTransaction.setTotalBalance(totalBalance.subtract(creditRequest.transactionAmount));
 
-        Mockito.when(mockRepo.findLastBy(creditRequest.playerId)).thenReturn(prevBalanceTransaction);
+        Mockito.when(mockRepo.findLastByPlayerId(creditRequest.playerId)).thenReturn(prevBalanceTransaction);
 
         IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
         increaseBalance.execute(creditRequest);
 
         assertGenerateValidData(increaseBalance.getNewBalanceTransaction());
         assertNotNull(increaseBalance.getCreditRepsonse());
+        assertNull(increaseBalance.getErrorResponse());
         assertFalse(increaseBalance.hasError());
         assertEquals(totalBalance, increaseBalance.getCreditRepsonse().totalBalance);
+    }
+
+    @Property
+    void testIncreaseBalanceGivenTransactionIdNotUnique(
+            @ForAll("genCreditRequest") CreditRequest creditRequest,
+            @ForAll @LongRange(min = 1) long countTransactionId) {
+        Mockito.when(mockRepo.countByTransactionId(creditRequest.transactionId)).thenReturn(countTransactionId);
+
+        IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
+        increaseBalance.execute(creditRequest);
+
+        assertNull(increaseBalance.getCreditRepsonse());
+        assertNotNull(increaseBalance.getErrorResponse());
+        assertTrue(increaseBalance.hasError());
     }
 
     @Example
@@ -73,12 +89,13 @@ class IncreaseBalanceTest extends Generator {
         TBalanceTransaction prevBalanceTransaction = genTBalanceTransaction().sample();
         prevBalanceTransaction.setTotalBalance(new BigDecimal("999999999.9999"));
 
-        Mockito.when(mockRepo.findLastBy(creditRequest.playerId)).thenReturn(prevBalanceTransaction);
+        Mockito.when(mockRepo.findLastByPlayerId(creditRequest.playerId)).thenReturn(prevBalanceTransaction);
 
         IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
         increaseBalance.execute(creditRequest);
 
         assertNull(increaseBalance.getCreditRepsonse());
+        assertNotNull(increaseBalance.getErrorResponse());
         assertTrue(increaseBalance.hasError());
     }
 
