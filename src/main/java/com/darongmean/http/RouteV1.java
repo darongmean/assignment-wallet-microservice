@@ -27,7 +27,7 @@ public class RouteV1 {
     @GET
     @Path("/balance")
     public BalanceResponse getBalance(@BeanParam BalanceRequest balanceRequest) {
-        GetBalance getBalance = new GetBalance(tBalanceTransactionRepository);
+        GetBalance getBalance = new GetBalance(tBalanceTransactionRepository, validator);
         getBalance.execute(balanceRequest);
         return getBalance.getBalanceResponse();
     }

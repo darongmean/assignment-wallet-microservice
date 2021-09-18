@@ -74,6 +74,12 @@ public class H2DBTest {
         }
     }
 
+    @RepeatedTest(1000)
+    @TestTransaction
+    void testFindLastByPlayerIdGivenAnyStringValue() {
+        tBalanceTransactionRepository.findLastByPlayerId(Arbitraries.strings().sample());
+    }
+
     private TBalanceTransaction assumeSomePlayerTransactionArePersisted(long count, String playerId) {
         TBalanceTransaction lastTransaction = null;
 
