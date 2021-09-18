@@ -31,6 +31,20 @@ public class Generator {
     }
 
     @Provide
+    public static Arbitrary<String> genInvalidTransactionId() {
+        return Arbitraries.strings().ofMinLength(256).injectNull(0.5);
+    }
+
+    @Provide
+    public static Arbitrary<String> genInvalidPlayerId() {
+        return Arbitraries.strings().ofMinLength(256).injectNull(0.5);
+    }
+
+    public static Arbitrary<BigDecimal> genInvalidTransactionAmount() {
+        return Arbitraries.bigDecimals().ofScale(4).greaterThan(new BigDecimal("999999999.9999")).injectNull(0.5);
+    }
+
+    @Provide
     public static BigDecimalArbitrary genTransactionAmount() {
         return genMoneyAmount().greaterThan(BigDecimal.ZERO);
     }

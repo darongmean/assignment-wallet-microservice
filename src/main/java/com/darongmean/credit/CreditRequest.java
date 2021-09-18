@@ -2,10 +2,7 @@ package com.darongmean.credit;
 
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 public class CreditRequest {
@@ -17,7 +14,7 @@ public class CreditRequest {
     public String transactionId;
     @NotNull
     @Digits(integer = 9, fraction = 4)
-    @PositiveOrZero
+    @Positive
     public BigDecimal transactionAmount;
 
     @Override
