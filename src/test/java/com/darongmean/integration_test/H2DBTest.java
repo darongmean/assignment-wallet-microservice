@@ -86,6 +86,16 @@ public class H2DBTest {
         return lastTransaction;
     }
 
+    @RepeatedTest(100)
+    @TestTransaction
+    void testCountByTransactionId() {
+        TBalanceTransaction tBalanceTransaction = genNonPersistedBalanceTransaction().sample();
+        tBalanceTransactionRepository.persist(tBalanceTransaction);
+
+        assertEquals(1,
+                tBalanceTransactionRepository.countByTransactionId(tBalanceTransaction.getTransactionId()));
+    }
+
     private Arbitrary<TBalanceTransaction> genNonPersistedBalanceTransaction() {
         return Generator.genTBalanceTransaction().map(obj -> {
             obj.setBalanceTransactionPk(null);
