@@ -26,13 +26,13 @@ public class H2DBTest {
     @Inject
     Validator validator;
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     void testGeneratorGenerateValidData() {
         assertGenerateValidData(Generator.genTBalanceTransaction().sample());
         assertGenerateValidData(genNonPersistedBalanceTransaction().sample());
     }
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     @TestTransaction
     void testNotThrowExceptionWhenPersistValidData() {
         TBalanceTransaction tBalanceTransaction = genNonPersistedBalanceTransaction().sample();
@@ -74,7 +74,7 @@ public class H2DBTest {
         }
     }
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     @TestTransaction
     void testFindLastByPlayerIdGivenAnyStringValue() {
         tBalanceTransactionRepository.findLastByPlayerId(Arbitraries.strings().sample());

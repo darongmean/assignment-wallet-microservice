@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 @QuarkusTest
 public class CreditRouteV1ErrorResponseTest {
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     @TestTransaction
     public void testPostInvalidRequest() {
         CreditRequest creditRequest = newInvalidCreditRequest();

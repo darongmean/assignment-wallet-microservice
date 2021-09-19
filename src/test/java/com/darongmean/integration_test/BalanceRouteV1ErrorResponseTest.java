@@ -9,7 +9,7 @@ import static io.restassured.RestAssured.given;
 @QuarkusTest
 public class BalanceRouteV1ErrorResponseTest {
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     public void testInvalidRequest() {
         given().queryParam("playerId", Generator.genInvalidPlayerId().sample())
                 .when().get("/v1/balance")
