@@ -19,7 +19,7 @@ public class IncreaseBalance {
     private final TBalanceTransactionRepository tBalanceTransactionRepository;
     private final Validator validator;
     private TBalanceTransaction newBalanceTransaction;
-    private CreditRepsonse creditRepsonse;
+    private CreditResponse creditResponse;
     private ErrorResponse errorResponse;
 
     public IncreaseBalance(TBalanceTransactionRepository tBalanceTransactionRepository, Validator validator) {
@@ -50,7 +50,7 @@ public class IncreaseBalance {
         }
 
         tBalanceTransactionRepository.persist(newBalanceTransaction);
-        creditRepsonse = beanMapper.map(newBalanceTransaction, CreditRepsonse.class);
+        creditResponse = beanMapper.map(newBalanceTransaction, CreditResponse.class);
     }
 
     private ErrorResponse initErrorResponse(TBalanceTransaction newBalanceTransaction) {
@@ -94,8 +94,8 @@ public class IncreaseBalance {
         return null != errorResponse;
     }
 
-    public CreditRepsonse getCreditRepsonse() {
-        return creditRepsonse;
+    public CreditResponse getCreditResponse() {
+        return creditResponse;
     }
 
     public ErrorResponse getErrorResponse() {

@@ -39,9 +39,9 @@ class IncreaseBalanceTest extends Generator {
         increaseBalance.execute(creditRequest);
 
         assertGenerateValidData(increaseBalance.getNewBalanceTransaction());
-        assertNotNull(increaseBalance.getCreditRepsonse());
+        assertNotNull(increaseBalance.getCreditResponse());
         assertFalse(increaseBalance.hasError());
-        assertEquals(creditRequest.transactionAmount, increaseBalance.getCreditRepsonse().totalBalance);
+        assertEquals(creditRequest.transactionAmount, increaseBalance.getCreditResponse().totalBalance);
     }
 
     @Property
@@ -62,10 +62,10 @@ class IncreaseBalanceTest extends Generator {
         increaseBalance.execute(creditRequest);
 
         assertGenerateValidData(increaseBalance.getNewBalanceTransaction());
-        assertNotNull(increaseBalance.getCreditRepsonse());
+        assertNotNull(increaseBalance.getCreditResponse());
         assertNull(increaseBalance.getErrorResponse());
         assertFalse(increaseBalance.hasError());
-        assertEquals(totalBalance, increaseBalance.getCreditRepsonse().totalBalance);
+        assertEquals(totalBalance, increaseBalance.getCreditResponse().totalBalance);
     }
 
     @Property
@@ -77,13 +77,13 @@ class IncreaseBalanceTest extends Generator {
         IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
         increaseBalance.execute(creditRequest);
 
-        assertNull(increaseBalance.getCreditRepsonse());
+        assertNull(increaseBalance.getCreditResponse());
         assertNotNull(increaseBalance.getErrorResponse());
         assertTrue(increaseBalance.hasError());
     }
 
     @Example
-    void testIncreaseBalanceAndTotalBalanceTooBig() {
+    void testTotalBalanceTooBig() {
         CreditRequest creditRequest = genCreditRequest().sample();
 
         TBalanceTransaction prevBalanceTransaction = genTBalanceTransaction().sample();
@@ -94,7 +94,7 @@ class IncreaseBalanceTest extends Generator {
         IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
         increaseBalance.execute(creditRequest);
 
-        assertNull(increaseBalance.getCreditRepsonse());
+        assertNull(increaseBalance.getCreditResponse());
         assertNotNull(increaseBalance.getErrorResponse());
         assertTrue(increaseBalance.hasError());
     }

@@ -51,6 +51,6 @@ public class RouteV1 {
             return Response.status(err.status).entity(err).build();
         }
 
-        return Response.ok(increaseBalance.getCreditRepsonse()).build();
+        return Response.ok(increaseBalance.getCreditResponse()).build();
     }
 }
