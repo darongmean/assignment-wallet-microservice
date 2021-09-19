@@ -11,6 +11,7 @@ import com.darongmean.h2db.TBalanceTransactionRepository;
 import com.darongmean.transaction.GetHistory;
 import com.darongmean.transaction.HistoryRequest;
 import com.darongmean.transaction.HistoryResponse;
+import io.opentracing.Tracer;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -27,6 +28,8 @@ public class RouteV1 {
     TBalanceTransactionRepository tBalanceTransactionRepository;
     @Inject
     Validator validator;
+    @Inject
+    Tracer tracer;
 
     @GET
     @Path("/balance")
@@ -55,6 +58,8 @@ public class RouteV1 {
     @Path("/credit")
     @Transactional
     public Response postCredit(CreditRequest creditRequest) {
+        creditRequest.traceId = getTraceId();
+
         IncreaseBalance increaseBalance = new IncreaseBalance(tBalanceTransactionRepository, validator);
         increaseBalance.execute(creditRequest);
 
@@ -71,6 +76,8 @@ public class RouteV1 {
     @Path("/debit")
     @Transactional
     public Response postDedit(DebitRequest debitRequest) {
+        debitRequest.traceId = getTraceId();
+
         DecreaseBalance decreaseBalance = new DecreaseBalance(tBalanceTransactionRepository, validator);
         decreaseBalance.execute(debitRequest);
 
@@ -81,5 +88,15 @@ public class RouteV1 {
         }
 
         return Response.ok(decreaseBalance.getDebitResponse()).build();
+    }
+
+    String getTraceId() {
+        if (tracer == null) {
+            return null;
+        }
+        if (tracer.activeSpan() == null) {
+            return null;
+        }
+        return tracer.activeSpan().context().toTraceId();
     }
 }

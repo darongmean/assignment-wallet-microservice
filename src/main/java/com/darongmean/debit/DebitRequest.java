@@ -1,5 +1,6 @@
 package com.darongmean.debit;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Digits;
@@ -19,6 +20,8 @@ public class DebitRequest {
     @Digits(integer = 9, fraction = 4)
     @Positive
     public BigDecimal transactionAmount;
+    @JsonIgnore
+    public String traceId;
 
     @Override
     public String toString() {
@@ -26,6 +29,7 @@ public class DebitRequest {
                 "playerId='" + playerId + '\'' +
                 ", transactionId='" + transactionId + '\'' +
                 ", transactionAmount=" + transactionAmount +
+                ", traceId='" + traceId + '\'' +
                 '}';
     }
 }
