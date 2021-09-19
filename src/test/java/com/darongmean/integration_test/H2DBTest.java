@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -107,6 +108,22 @@ public class H2DBTest {
             obj.setBalanceTransactionPk(null);
             return obj;
         });
+    }
+
+    @RepeatedTest(100)
+    @TestTransaction
+    void testListByPlayerId() {
+        long count = Arbitraries.longs().greaterOrEqual(0).lessOrEqual(100).sample();
+
+        String playerId = Generator.genPlayerId().sample();
+        assumeSomePlayerTransactionArePersisted(count, playerId);
+
+        String playerId2 = Generator.genPlayerId().sample();
+        assumeSomePlayerTransactionArePersisted(count, playerId2);
+
+        List<TBalanceTransaction> actualTransaction = tBalanceTransactionRepository.listByPlayerId(playerId);
+
+        assertEquals(count, actualTransaction.size());
     }
 
     private void assertGenerateValidData(TBalanceTransaction tBalanceTransaction) {

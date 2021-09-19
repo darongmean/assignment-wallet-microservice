@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import io.quarkus.panache.common.Sort;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
 
 @ApplicationScoped
 public class TBalanceTransactionRepository implements PanacheRepository<TBalanceTransaction> {
@@ -14,5 +15,9 @@ public class TBalanceTransactionRepository implements PanacheRepository<TBalance
 
     public long countByTransactionId(String transactionId) {
         return count("transactionId", transactionId);
+    }
+
+    public List<TBalanceTransaction> listByPlayerId(String playerId) {
+        return list("playerId", playerId);
     }
 }
