@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 @QuarkusTest
 public class RouteV1Test {
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     @TestTransaction
     public void testCreditEndpoint() {
         CreditRequest creditRequest = new CreditRequest();
@@ -26,7 +26,10 @@ public class RouteV1Test {
                 .body(creditRequest)
                 .when().post("/v1/credit")
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .body(containsString("transactionId"))
+                .body(containsString("totalBalance"))
+                .body(containsString("playerId"));;
     }
 
     @RepeatedTest(100)
@@ -58,7 +61,7 @@ public class RouteV1Test {
                 .body(containsString("playerId"));
     }
 
-    @RepeatedTest(1000)
+    @RepeatedTest(100)
     @TestTransaction
     public void testBalanceEndpoint() {
         CreditRequest creditRequest = new CreditRequest();
@@ -76,7 +79,9 @@ public class RouteV1Test {
                 .queryParam("playerId", creditRequest.playerId)
                 .when().get("/v1/balance")
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .body(containsString("totalBalance"))
+                .body(containsString("playerId"));
     }
 
 }

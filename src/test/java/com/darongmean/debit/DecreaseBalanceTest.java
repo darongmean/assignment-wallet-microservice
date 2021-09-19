@@ -7,6 +7,7 @@ import net.jqwik.api.*;
 import net.jqwik.api.constraints.LongRange;
 import net.jqwik.api.constraints.Size;
 import net.jqwik.api.constraints.UniqueElements;
+import net.jqwik.api.constraints.WithNull;
 import net.jqwik.api.lifecycle.BeforeTry;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -35,8 +36,27 @@ class DecreaseBalanceTest extends Generator {
     }
 
     @BeforeTry
-    void setup() {
+    void setUp() {
         mockRepo = Mockito.mock(TBalanceTransactionRepository.class);
+    }
+
+    @Property
+    void testDecreaseBalanceNotThrowException(
+            @ForAll String playerId,
+            @ForAll String transactionId,
+            @ForAll BigDecimal transactionAmount,
+            @ForAll("genTBalanceTransaction") @WithNull(0.4) TBalanceTransaction prevTransaction,
+            @ForAll long countTransactionId) {
+        DebitRequest request = new DebitRequest();
+        request.playerId = playerId;
+        request.transactionId = transactionId;
+        request.transactionAmount = transactionAmount;
+
+        Mockito.when(mockRepo.findLastByPlayerId(playerId)).thenReturn(prevTransaction);
+        Mockito.when(mockRepo.countByTransactionId(transactionId)).thenReturn(countTransactionId);
+
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
+        decreaseBalance.execute(request);
     }
 
     @Property

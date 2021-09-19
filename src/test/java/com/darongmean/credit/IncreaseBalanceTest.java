@@ -10,6 +10,7 @@ import net.jqwik.api.Property;
 import net.jqwik.api.constraints.LongRange;
 import net.jqwik.api.constraints.Size;
 import net.jqwik.api.constraints.UniqueElements;
+import net.jqwik.api.constraints.WithNull;
 import net.jqwik.api.lifecycle.BeforeTry;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -29,8 +30,45 @@ class IncreaseBalanceTest extends Generator {
     TBalanceTransactionRepository mockRepo;
 
     @BeforeTry
-    void setup() {
+    void setUp() {
         mockRepo = Mockito.mock(TBalanceTransactionRepository.class);
+    }
+
+    @Property
+    void testIncreaseBalanceNotThrowException(
+            @ForAll String playerId,
+            @ForAll String transactionId,
+            @ForAll BigDecimal transactionAmount,
+            @ForAll("genTBalanceTransaction") @WithNull(0.4) TBalanceTransaction prevTransaction,
+            @ForAll long countTransactionId) {
+        CreditRequest request = new CreditRequest();
+        request.playerId = playerId;
+        request.transactionId = transactionId;
+        request.transactionAmount = transactionAmount;
+
+        Mockito.when(mockRepo.findLastByPlayerId(playerId)).thenReturn(prevTransaction);
+        Mockito.when(mockRepo.countByTransactionId(transactionId)).thenReturn(countTransactionId);
+
+        IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
+        increaseBalance.execute(request);
+    }
+
+    @Property
+    void testIncreaseBalanceGivenInvalidRequest(
+            @ForAll("genInvalidPlayerId") String invalidPlayerId,
+            @ForAll("genInvalidTransactionId") String invalidTransactionId,
+            @ForAll("genInvalidTransactionAmount") BigDecimal invalidTransactionAmount) {
+        CreditRequest request = new CreditRequest();
+        request.playerId = invalidPlayerId;
+        request.transactionId = invalidTransactionId;
+        request.transactionAmount = invalidTransactionAmount;
+
+        IncreaseBalance increaseBalance = new IncreaseBalance(mockRepo, validator);
+        increaseBalance.execute(request);
+
+        assertNotNull(increaseBalance.getErrorResponse());
+        assertNull(increaseBalance.getCreditResponse());
+        assertTrue(increaseBalance.hasError());
     }
 
     @Property
@@ -66,6 +104,7 @@ class IncreaseBalanceTest extends Generator {
         assertNull(increaseBalance.getErrorResponse());
         assertFalse(increaseBalance.hasError());
         assertEquals(totalBalance, increaseBalance.getCreditResponse().totalBalance);
+        assertEquals("credit", increaseBalance.getNewBalanceTransaction().getTransactionType());
     }
 
     @Property
