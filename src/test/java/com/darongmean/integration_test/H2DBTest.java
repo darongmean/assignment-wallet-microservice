@@ -10,14 +10,14 @@ import net.jqwik.api.Arbitrary;
 import org.junit.jupiter.api.RepeatedTest;
 
 import javax.inject.Inject;
-import javax.persistence.PersistenceException;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 public class H2DBTest {
@@ -46,21 +46,6 @@ public class H2DBTest {
 
     @RepeatedTest(100)
     @TestTransaction
-    void testThrowExceptionGivenTransactionIdNotUnique() {
-        long expectedCount = Arbitraries.longs().greaterOrEqual(2).lessOrEqual(100).sample();
-        String reusedTransactionId = Generator.genTransactionId().sample();
-
-        assertThrows(PersistenceException.class, () -> {
-            for (int i = 0; i < expectedCount; i++) {
-                TBalanceTransaction sample = genNonPersistedBalanceTransaction().sample();
-                sample.setTransactionId(reusedTransactionId);
-                tBalanceTransactionRepository.persist(sample);
-            }
-        });
-    }
-
-    @RepeatedTest(100)
-    @TestTransaction
     void testFindLastByPlayerId() {
         long count = Arbitraries.longs().greaterOrEqual(0).lessOrEqual(100).sample();
         String playerId = Generator.genPlayerId().sample();
@@ -77,7 +62,7 @@ public class H2DBTest {
 
     @RepeatedTest(100)
     @TestTransaction
-    void testFindLastByPlayerIdGivenAnyStringValue() {
+    void testFindLastByPlayerIdNotThrowExceptionGivenAnyStringValue() {
         tBalanceTransactionRepository.findLastByPlayerId(Arbitraries.strings().sample());
     }
 
