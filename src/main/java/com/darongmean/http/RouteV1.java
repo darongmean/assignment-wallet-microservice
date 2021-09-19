@@ -5,6 +5,8 @@ import com.darongmean.balance.GetBalance;
 import com.darongmean.common.ErrorResponse;
 import com.darongmean.credit.CreditRequest;
 import com.darongmean.credit.IncreaseBalance;
+import com.darongmean.debit.DebitRequest;
+import com.darongmean.debit.DecreaseBalance;
 import com.darongmean.h2db.TBalanceTransactionRepository;
 
 import javax.inject.Inject;
@@ -52,5 +54,21 @@ public class RouteV1 {
         }
 
         return Response.ok(increaseBalance.getCreditResponse()).build();
+    }
+
+    @POST
+    @Path("/debit")
+    @Transactional
+    public Response postDedit(DebitRequest debitRequest) {
+        DecreaseBalance decreaseBalance = new DecreaseBalance(tBalanceTransactionRepository, validator);
+        decreaseBalance.execute(debitRequest);
+
+        if (decreaseBalance.hasError()) {
+            ErrorResponse err = decreaseBalance.getErrorResponse();
+            err.status = 400;
+            return Response.status(err.status).entity(err).build();
+        }
+
+        return Response.ok(decreaseBalance.getDebitResponse()).build();
     }
 }
