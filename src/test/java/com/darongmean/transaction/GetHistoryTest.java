@@ -6,6 +6,7 @@ import com.darongmean.h2db.TBalanceTransactionRepository;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.From;
 import net.jqwik.api.Property;
+import net.jqwik.api.constraints.Size;
 import net.jqwik.api.lifecycle.BeforeTry;
 import org.mockito.Mockito;
 
@@ -36,11 +37,12 @@ class GetHistoryTest extends Generator {
     }
 
     @Property
-    void testGetHistory(@ForAll String playerId,
-                        @ForAll List<@From("genTBalanceTransaction") TBalanceTransaction> playerTransactions) {
+    void testGetHistory(@ForAll("genPlayerId") String playerId,
+                        @ForAll @Size(min = 1) List<@From("genTBalanceTransaction") TBalanceTransaction> playerTransactions) {
         HistoryRequest historyRequest = new HistoryRequest();
         historyRequest.playerId = playerId;
 
+        playerTransactions.forEach(tBalanceTransaction -> tBalanceTransaction.setPlayerId(playerId));
         Mockito.when(mockRepo.listByPlayerId(playerId)).thenReturn(playerTransactions);
 
         GetHistory getHistory = new GetHistory(mockRepo);
