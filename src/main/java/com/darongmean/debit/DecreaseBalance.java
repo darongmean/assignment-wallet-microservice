@@ -92,7 +92,7 @@ public class DecreaseBalance {
     }
 
     private void removeFund(TBalanceTransaction newTransaction, TBalanceTransaction prevTransaction, BigDecimal amount) {
-        newTransaction.setTotalBalance(prevTransaction.getTransactionAmount().subtract(amount));
+        newTransaction.setTotalBalance(prevTransaction.getTotalBalance().subtract(amount));
     }
 
 

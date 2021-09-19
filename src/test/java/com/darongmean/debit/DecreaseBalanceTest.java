@@ -96,18 +96,20 @@ class DecreaseBalanceTest extends Generator {
         debitRequest.transactionId = transactionIds.get(0);
         prevBalanceTransaction.setTransactionId(transactionIds.get(1));
         // arrange so that totalBalance is positive
-        debitRequest.transactionAmount = debitRequest.transactionAmount.min(prevBalanceTransaction.getTransactionAmount());
+        prevBalanceTransaction.setTotalBalance(prevBalanceTransaction.getTotalBalance().add(debitRequest.transactionAmount));
 
         Mockito.when(mockRepo.findLastByPlayerId(debitRequest.playerId)).thenReturn(prevBalanceTransaction);
 
         DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
         decreaseBalance.execute(debitRequest);
 
-        assertGenerateValidData(decreaseBalance.getNewBalanceTransaction());
         assertNotNull(decreaseBalance.getDebitResponse());
         assertNull(decreaseBalance.getErrorResponse());
         assertFalse(decreaseBalance.hasError());
-        assertEquals(prevBalanceTransaction.getTransactionAmount().subtract(debitRequest.transactionAmount),
+
+        assertGenerateValidData(decreaseBalance.getNewBalanceTransaction());
+
+        assertEquals(prevBalanceTransaction.getTotalBalance().subtract(debitRequest.transactionAmount),
                 decreaseBalance.getDebitResponse().totalBalance);
         assertEquals("debit", decreaseBalance.getNewBalanceTransaction().getTransactionType());
     }
