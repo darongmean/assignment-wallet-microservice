@@ -8,6 +8,9 @@ import com.darongmean.credit.IncreaseBalance;
 import com.darongmean.debit.DebitRequest;
 import com.darongmean.debit.DecreaseBalance;
 import com.darongmean.h2db.TBalanceTransactionRepository;
+import com.darongmean.transaction.GetHistory;
+import com.darongmean.transaction.HistoryRequest;
+import com.darongmean.transaction.HistoryResponse;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -38,6 +41,14 @@ public class RouteV1 {
         }
 
         return Response.ok(getBalance.getBalanceResponse()).build();
+    }
+
+    @GET
+    @Path("/transaction")
+    public HistoryResponse getTransaction(@BeanParam HistoryRequest historyRequest) {
+        GetHistory getHistory = new GetHistory(tBalanceTransactionRepository);
+        getHistory.execute(historyRequest);
+        return getHistory.getHistoryResponse();
     }
 
     @POST
