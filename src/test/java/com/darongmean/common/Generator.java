@@ -40,6 +40,7 @@ public class Generator {
         return Arbitraries.strings().ofMinLength(256).injectNull(0.5);
     }
 
+    @Provide
     public static Arbitrary<BigDecimal> genInvalidTransactionAmount() {
         return Arbitraries.bigDecimals().ofScale(4).greaterThan(new BigDecimal("999999999.9999")).injectNull(0.5);
     }
