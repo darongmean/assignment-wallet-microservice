@@ -1,5 +1,6 @@
 package com.darongmean.credit;
 
+import com.darongmean.common.TraceId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
@@ -58,7 +59,7 @@ public class CreditRequest {
     }
 
     public String getTraceId() {
-        return traceId;
+        return TraceId.format(traceId);
     }
 
     public void setTraceId(String traceId) {

@@ -78,15 +78,17 @@ public class Generator {
         return Combinators.combine(
                 genPlayerId(),
                 genTransactionAmount(),
-                genTransactionId()
+                genTransactionId(),
+                Arbitraries.strings()
         ).as(Generator::newCreditRequest);
     }
 
-    private static CreditRequest newCreditRequest(String playerId, BigDecimal transactionAmount, String transactionId) {
+    public static CreditRequest newCreditRequest(String playerId, BigDecimal transactionAmount, String transactionId, String traceId) {
         CreditRequest request = new CreditRequest();
         request.setPlayerId(playerId);
         request.setTransactionAmount(transactionAmount);
         request.setTransactionId(transactionId);
+        request.setTraceId(traceId);
 
         return request;
     }

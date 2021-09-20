@@ -37,14 +37,12 @@ class IncreaseBalanceTest extends Generator {
     @Property
     void testIncreaseBalanceNotThrowException(
             @ForAll String playerId,
-            @ForAll String transactionId,
             @ForAll BigDecimal transactionAmount,
+            @ForAll String transactionId,
+            @ForAll String traceId,
             @ForAll("genTBalanceTransaction") @WithNull(0.4) TBalanceTransaction prevTransaction,
             @ForAll long countTransactionId) {
-        CreditRequest request = new CreditRequest();
-        request.setPlayerId(playerId);
-        request.setTransactionId(transactionId);
-        request.setTransactionAmount(transactionAmount);
+        CreditRequest request = newCreditRequest(playerId, transactionAmount, transactionId, traceId);
 
         Mockito.when(mockRepo.findLastByPlayerId(playerId)).thenReturn(prevTransaction);
         Mockito.when(mockRepo.countByTransactionId(transactionId)).thenReturn(countTransactionId);

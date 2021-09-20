@@ -26,11 +26,12 @@ class DecreaseBalanceTest extends Generator {
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     TBalanceTransactionRepository mockRepo;
 
-    private static DebitRequest newDebitRequest(String playerId, BigDecimal transactionAmount, String transactionId) {
+    private static DebitRequest newDebitRequest(String playerId, BigDecimal transactionAmount, String transactionId, String traceId) {
         DebitRequest request = new DebitRequest();
         request.setPlayerId(playerId);
         request.setTransactionAmount(transactionAmount);
         request.setTransactionId(transactionId);
+        request.setTraceId(traceId);
 
         return request;
     }
@@ -43,14 +44,12 @@ class DecreaseBalanceTest extends Generator {
     @Property
     void testDecreaseBalanceNotThrowException(
             @ForAll String playerId,
-            @ForAll String transactionId,
             @ForAll BigDecimal transactionAmount,
+            @ForAll String transactionId,
+            @ForAll String traceId,
             @ForAll("genTBalanceTransaction") @WithNull(0.4) TBalanceTransaction prevTransaction,
             @ForAll long countTransactionId) {
-        DebitRequest request = new DebitRequest();
-        request.setPlayerId(playerId);
-        request.setTransactionId(transactionId);
-        request.setTransactionAmount(transactionAmount);
+        DebitRequest request = newDebitRequest(playerId, transactionAmount, transactionId, traceId);
 
         Mockito.when(mockRepo.findLastByPlayerId(playerId)).thenReturn(prevTransaction);
         Mockito.when(mockRepo.countByTransactionId(transactionId)).thenReturn(countTransactionId);
@@ -142,11 +141,12 @@ class DecreaseBalanceTest extends Generator {
     }
 
     @Provide
-    private Arbitrary<DebitRequest> genDebitRequest() {
+    Arbitrary<DebitRequest> genDebitRequest() {
         return Combinators.combine(
                 genPlayerId(),
                 genTransactionAmount(),
-                genTransactionId()
+                genTransactionId(),
+                Arbitraries.strings()
         ).as(DecreaseBalanceTest::newDebitRequest);
     }
 
