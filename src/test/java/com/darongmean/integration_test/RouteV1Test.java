@@ -18,9 +18,9 @@ public class RouteV1Test {
     @TestTransaction
     public void testCreditEndpoint() {
         CreditRequest creditRequest = new CreditRequest();
-        creditRequest.transactionId = Generator.genTransactionId().sample();
-        creditRequest.transactionAmount = Generator.genTransactionAmount().sample();
-        creditRequest.playerId = Generator.genPlayerId().sample();
+        creditRequest.setTransactionId(Generator.genTransactionId().sample());
+        creditRequest.setTransactionAmount(Generator.genTransactionAmount().sample());
+        creditRequest.setPlayerId(Generator.genPlayerId().sample());
 
         given().contentType(ContentType.JSON)
                 .body(creditRequest)
@@ -36,9 +36,9 @@ public class RouteV1Test {
     @TestTransaction
     public void testDebitEndpoint() {
         CreditRequest creditRequest = new CreditRequest();
-        creditRequest.transactionId = Generator.genTransactionId().sample();
-        creditRequest.transactionAmount = Generator.genTransactionAmount().sample();
-        creditRequest.playerId = Generator.genPlayerId().sample();
+        creditRequest.setTransactionId(Generator.genTransactionId().sample());
+        creditRequest.setTransactionAmount(Generator.genTransactionAmount().sample());
+        creditRequest.setPlayerId(Generator.genPlayerId().sample());
 
         given().contentType(ContentType.JSON)
                 .body(creditRequest)
@@ -47,9 +47,9 @@ public class RouteV1Test {
                 .statusCode(200);
 
         DebitRequest debitRequest = new DebitRequest();
-        debitRequest.transactionId = Generator.genTransactionId().filter(v -> !v.equals(creditRequest.transactionId)).sample();
-        debitRequest.transactionAmount = creditRequest.transactionAmount;
-        debitRequest.playerId = creditRequest.playerId;
+        debitRequest.transactionId = Generator.genTransactionId().filter(v -> !v.equals(creditRequest.getTransactionId())).sample();
+        debitRequest.transactionAmount = creditRequest.getTransactionAmount();
+        debitRequest.playerId = creditRequest.getPlayerId();
 
         given().contentType(ContentType.JSON)
                 .body(debitRequest)
@@ -65,9 +65,9 @@ public class RouteV1Test {
     @TestTransaction
     public void testBalanceEndpoint() {
         CreditRequest creditRequest = new CreditRequest();
-        creditRequest.transactionId = Generator.genTransactionId().sample();
-        creditRequest.transactionAmount = Generator.genTransactionAmount().sample();
-        creditRequest.playerId = Generator.genPlayerId().sample();
+        creditRequest.setTransactionId(Generator.genTransactionId().sample());
+        creditRequest.setTransactionAmount(Generator.genTransactionAmount().sample());
+        creditRequest.setPlayerId(Generator.genPlayerId().sample());
 
         given().contentType(ContentType.JSON)
                 .body(creditRequest)
@@ -76,7 +76,7 @@ public class RouteV1Test {
                 .statusCode(200);
 
         given()
-                .queryParam("playerId", creditRequest.playerId)
+                .queryParam("playerId", creditRequest.getPlayerId())
                 .when().get("/v1/balance")
                 .then()
                 .statusCode(200)
@@ -88,9 +88,9 @@ public class RouteV1Test {
     @TestTransaction
     public void testTransactionEndpoint() {
         CreditRequest creditRequest = new CreditRequest();
-        creditRequest.transactionId = Generator.genTransactionId().sample();
-        creditRequest.transactionAmount = Generator.genTransactionAmount().sample();
-        creditRequest.playerId = Generator.genPlayerId().sample();
+        creditRequest.setTransactionId(Generator.genTransactionId().sample());
+        creditRequest.setTransactionAmount(Generator.genTransactionAmount().sample());
+        creditRequest.setPlayerId(Generator.genPlayerId().sample());
 
         given().contentType(ContentType.JSON)
                 .body(creditRequest)
@@ -99,7 +99,7 @@ public class RouteV1Test {
                 .statusCode(200);
 
         given()
-                .queryParam("playerId", creditRequest.playerId)
+                .queryParam("playerId", creditRequest.getPlayerId())
                 .when().get("/v1/transaction")
                 .then()
                 .statusCode(200)

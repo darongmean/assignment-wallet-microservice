@@ -46,9 +46,9 @@ public class SmokeTest {
 
         for (int i = 0; i < count; i++) {
             CreditRequest creditRequest = new CreditRequest();
-            creditRequest.transactionId = transactionIds.get(i);
-            creditRequest.transactionAmount = transactionAmounts.get(i);
-            creditRequest.playerId = playerIds.get(i);
+            creditRequest.setTransactionId(transactionIds.get(i));
+            creditRequest.setTransactionAmount(transactionAmounts.get(i));
+            creditRequest.setPlayerId(playerIds.get(i));
 
             given().contentType(ContentType.JSON)
                     .body(creditRequest)
@@ -73,9 +73,9 @@ public class SmokeTest {
         // apply debit or credit
         for (int i = 0; i < count; i++) {
             CreditRequest creditRequest = new CreditRequest();
-            creditRequest.transactionId = transactionIds.get(i);
-            creditRequest.transactionAmount = transactionAmounts.get(i);
-            creditRequest.playerId = playerId;
+            creditRequest.setTransactionId(transactionIds.get(i));
+            creditRequest.setTransactionAmount(transactionAmounts.get(i));
+            creditRequest.setPlayerId(playerId);
 
             if ("credit".equals(transactionTypes.get(i))) {
                 IncreaseBalance increaseBalance = new IncreaseBalance(tBalanceTransactionRepository, validator);

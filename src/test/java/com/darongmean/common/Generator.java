@@ -84,9 +84,9 @@ public class Generator {
 
     private static CreditRequest newCreditRequest(String playerId, BigDecimal transactionAmount, String transactionId) {
         CreditRequest request = new CreditRequest();
-        request.playerId = playerId;
-        request.transactionAmount = transactionAmount;
-        request.transactionId = transactionId;
+        request.setPlayerId(playerId);
+        request.setTransactionAmount(transactionAmount);
+        request.setTransactionId(transactionId);
 
         return request;
     }

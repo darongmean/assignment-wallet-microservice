@@ -36,9 +36,9 @@ public class CreditRouteV1ErrorResponseTest {
                         Generator.genInvalidTransactionAmount())
                 .as((playerId, transactionId, transactionAmount) -> {
                     CreditRequest creditRequest = new CreditRequest();
-                    creditRequest.transactionId = transactionId;
-                    creditRequest.transactionAmount = transactionAmount;
-                    creditRequest.playerId = playerId;
+                    creditRequest.setTransactionId(transactionId);
+                    creditRequest.setTransactionAmount(transactionAmount);
+                    creditRequest.setPlayerId(playerId);
                     return creditRequest;
                 }).sample();
     }

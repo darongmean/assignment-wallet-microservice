@@ -33,17 +33,17 @@ public class IncreaseBalance {
             return;
         }
 
-        long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(creditRequest.transactionId);
+        long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(creditRequest.getTransactionId());
         if (countTransactionIdUsed > 0) {
             errorResponse = new ErrorResponse();
             errorResponse.setDetail(List.of("transactionId must be unique"));
             return;
         }
 
-        TBalanceTransaction prevTransaction = tBalanceTransactionRepository.findLastByPlayerId(creditRequest.playerId);
+        TBalanceTransaction prevTransaction = tBalanceTransactionRepository.findLastByPlayerId(creditRequest.getPlayerId());
 
         newBalanceTransaction = initBalanceTransaction(creditRequest);
-        addFund(newBalanceTransaction, prevTransaction, creditRequest.transactionAmount);
+        addFund(newBalanceTransaction, prevTransaction, creditRequest.getTransactionAmount());
         if (dataHasError(newBalanceTransaction)) {
             errorResponse = initErrorResponse(newBalanceTransaction);
             return;

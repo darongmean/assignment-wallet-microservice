@@ -58,7 +58,7 @@ public class RouteV1 {
     @Path("/credit")
     @Transactional
     public Response postCredit(CreditRequest creditRequest) {
-        creditRequest.traceId = getTraceId();
+        creditRequest.setTraceId(getTraceId());
 
         IncreaseBalance increaseBalance = new IncreaseBalance(tBalanceTransactionRepository, validator);
         increaseBalance.execute(creditRequest);

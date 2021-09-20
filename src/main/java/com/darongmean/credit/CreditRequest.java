@@ -3,30 +3,65 @@ package com.darongmean.credit;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public class CreditRequest {
     @Length(max = 255)
     @NotBlank
-    public String playerId;
+    private String playerId;
     @Length(max = 255)
     @NotBlank
-    public String transactionId;
+    private String transactionId;
     @NotNull
     @Digits(integer = 9, fraction = 4)
     @Positive
-    public BigDecimal transactionAmount;
+    private BigDecimal transactionAmount;
     @JsonIgnore
-    public String traceId;
+    private String traceId;
 
     @Override
     public String toString() {
         return "CreditRequest{" +
-                "playerId='" + playerId + '\'' +
-                ", transactionId='" + transactionId + '\'' +
-                ", transactionAmount=" + transactionAmount +
-                ", traceId='" + traceId + '\'' +
+                "playerId='" + getPlayerId() + '\'' +
+                ", transactionId='" + getTransactionId() + '\'' +
+                ", transactionAmount=" + getTransactionAmount() +
+                ", traceId='" + getTraceId() + '\'' +
                 '}';
+    }
+
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public BigDecimal getTransactionAmount() {
+        return transactionAmount;
+    }
+
+    public void setTransactionAmount(BigDecimal transactionAmount) {
+        this.transactionAmount = transactionAmount;
+    }
+
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
     }
 }
