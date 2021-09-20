@@ -3,10 +3,10 @@
 A simple wallet microservice. It does the following:
 - Credit a player. Adding fund to the player account balance. 
     - The caller will supply a transaction id that must be unique for all transactions. 
-    - If the transaction id is no unique, the operation must fail. 
+    - If the transaction id is not unique, the operation must fail. 
 - Debit a player. Removing fund from the player account balance.
     - The caller will supply a transaction id that must be unique for all transactions.
-    - If the transaction id is no unique, the operation must fail.
+    - If the transaction id is not unique, the operation must fail.
     - The transaction will only succeed if there are sufficient funds on the account (balance - debit >= 0)
 - Get current balance per player
 - Get transaction history per player
