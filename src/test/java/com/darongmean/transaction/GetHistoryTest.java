@@ -28,7 +28,7 @@ class GetHistoryTest extends Generator {
             @ForAll String playerId,
             @ForAll List<@From("genTBalanceTransaction") TBalanceTransaction> prevTransactions) {
         HistoryRequest historyRequest = new HistoryRequest();
-        historyRequest.playerId = playerId;
+        historyRequest.setPlayerId(playerId);
 
         Mockito.when(mockRepo.listByPlayerId(playerId)).thenReturn(prevTransactions);
 
@@ -40,7 +40,7 @@ class GetHistoryTest extends Generator {
     void testGetHistory(@ForAll("genPlayerId") String playerId,
                         @ForAll @Size(min = 1) List<@From("genTBalanceTransaction") TBalanceTransaction> playerTransactions) {
         HistoryRequest historyRequest = new HistoryRequest();
-        historyRequest.playerId = playerId;
+        historyRequest.setPlayerId(playerId);
 
         playerTransactions.forEach(tBalanceTransaction -> tBalanceTransaction.setPlayerId(playerId));
         Mockito.when(mockRepo.listByPlayerId(playerId)).thenReturn(playerTransactions);
