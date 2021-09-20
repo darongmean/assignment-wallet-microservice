@@ -47,9 +47,9 @@ public class RouteV1Test {
                 .statusCode(200);
 
         DebitRequest debitRequest = new DebitRequest();
-        debitRequest.transactionId = Generator.genTransactionId().filter(v -> !v.equals(creditRequest.getTransactionId())).sample();
-        debitRequest.transactionAmount = creditRequest.getTransactionAmount();
-        debitRequest.playerId = creditRequest.getPlayerId();
+        debitRequest.setTransactionId(Generator.genTransactionId().filter(v -> !v.equals(creditRequest.getTransactionId())).sample());
+        debitRequest.setTransactionAmount(creditRequest.getTransactionAmount());
+        debitRequest.setPlayerId(creditRequest.getPlayerId());
 
         given().contentType(ContentType.JSON)
                 .body(debitRequest)

@@ -33,14 +33,14 @@ public class DecreaseBalance {
             return;
         }
 
-        long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(debitRequest.transactionId);
+        long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(debitRequest.getTransactionId());
         if (countTransactionIdUsed > 0) {
             errorResponse = new ErrorResponse();
             errorResponse.setDetail(List.of("transactionId must be unique"));
             return;
         }
 
-        TBalanceTransaction prevTransaction = tBalanceTransactionRepository.findLastByPlayerId(debitRequest.playerId);
+        TBalanceTransaction prevTransaction = tBalanceTransactionRepository.findLastByPlayerId(debitRequest.getPlayerId());
         if (prevTransaction == null) {
             errorResponse = new ErrorResponse();
             errorResponse.setDetail(List.of("totalBalance must be positive"));
@@ -48,7 +48,7 @@ public class DecreaseBalance {
         }
 
         newBalanceTransaction = initBalanceTransaction(debitRequest);
-        removeFund(newBalanceTransaction, prevTransaction, debitRequest.transactionAmount);
+        removeFund(newBalanceTransaction, prevTransaction, debitRequest.getTransactionAmount());
         if (dataHasError(newBalanceTransaction)) {
             errorResponse = initErrorResponse(newBalanceTransaction);
             return;

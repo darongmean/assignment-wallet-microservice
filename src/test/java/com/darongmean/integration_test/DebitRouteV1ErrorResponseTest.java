@@ -17,9 +17,9 @@ public class DebitRouteV1ErrorResponseTest {
     @TestTransaction
     public void testPostInvalidRequest() {
         DebitRequest debitRequest = new DebitRequest();
-        debitRequest.transactionId = Generator.genInvalidTransactionId().sample();
-        debitRequest.transactionAmount = Generator.genInvalidTransactionAmount().sample();
-        debitRequest.playerId = Generator.genInvalidPlayerId().sample();
+        debitRequest.setTransactionId(Generator.genInvalidTransactionId().sample());
+        debitRequest.setTransactionAmount(Generator.genInvalidTransactionAmount().sample());
+        debitRequest.setPlayerId(Generator.genInvalidPlayerId().sample());
 
         given().contentType(ContentType.JSON)
                 .body(debitRequest)

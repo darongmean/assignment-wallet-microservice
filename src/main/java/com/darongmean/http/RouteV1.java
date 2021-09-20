@@ -76,7 +76,7 @@ public class RouteV1 {
     @Path("/debit")
     @Transactional
     public Response postDedit(DebitRequest debitRequest) {
-        debitRequest.traceId = getTraceId();
+        debitRequest.setTraceId(getTraceId());
 
         DecreaseBalance decreaseBalance = new DecreaseBalance(tBalanceTransactionRepository, validator);
         decreaseBalance.execute(debitRequest);
