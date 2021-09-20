@@ -11,7 +11,7 @@ A simple wallet microservice. It does the following:
 - Get current balance per player
 - Get transaction history per player
 
-## Implementation
+## Implementation Details
 
 - All functional requirements are implemented.
 - `POST` operation on `/v1/credit` and `/v1/debit` endpoints is idempotent if given a unique value to `Idempotency-Key` header.
@@ -19,6 +19,7 @@ A simple wallet microservice. It does the following:
 - Use property-based testing.
 - Integrate Distributed Tracing technology, OpenTracing.
 - Use flyway to manage database versioning.
+- Validate with Hibernate Validator.
 
 ## How to run
 
@@ -32,6 +33,14 @@ $ ./mvnw compile quarkus:dev
 Swagger UI will be available at http://localhost:8080/q/swagger-ui.
 
 Jaeger UI will be available at http://localhost:16686.
+
+## How to test
+
+Run the following command.
+
+```shell
+$ ./mvnw clean test
+```
 
 ## Swagger UI
 
