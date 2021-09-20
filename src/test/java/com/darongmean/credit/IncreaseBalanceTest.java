@@ -79,7 +79,7 @@ class IncreaseBalanceTest extends Generator {
         assertGenerateValidData(increaseBalance.getNewBalanceTransaction());
         assertNotNull(increaseBalance.getCreditResponse());
         assertFalse(increaseBalance.hasError());
-        assertEquals(creditRequest.getTransactionAmount(), increaseBalance.getCreditResponse().totalBalance);
+        assertEquals(creditRequest.getTransactionAmount(), increaseBalance.getCreditResponse().getTotalBalance());
     }
 
     @Property
@@ -103,7 +103,7 @@ class IncreaseBalanceTest extends Generator {
         assertNotNull(increaseBalance.getCreditResponse());
         assertNull(increaseBalance.getErrorResponse());
         assertFalse(increaseBalance.hasError());
-        assertEquals(totalBalance, increaseBalance.getCreditResponse().totalBalance);
+        assertEquals(totalBalance, increaseBalance.getCreditResponse().getTotalBalance());
         assertEquals("credit", increaseBalance.getNewBalanceTransaction().getTransactionType());
     }
 
