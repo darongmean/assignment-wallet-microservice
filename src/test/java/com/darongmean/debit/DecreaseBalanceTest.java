@@ -110,7 +110,7 @@ class DecreaseBalanceTest extends Generator {
         assertGenerateValidData(decreaseBalance.getNewBalanceTransaction());
 
         assertEquals(prevBalanceTransaction.getTotalBalance().subtract(debitRequest.getTransactionAmount()),
-                decreaseBalance.getDebitResponse().totalBalance);
+                decreaseBalance.getDebitResponse().getTotalBalance());
         assertEquals("debit", decreaseBalance.getNewBalanceTransaction().getTransactionType());
     }
 
