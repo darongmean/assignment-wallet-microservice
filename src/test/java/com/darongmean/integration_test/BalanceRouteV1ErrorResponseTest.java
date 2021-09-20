@@ -14,7 +14,7 @@ public class BalanceRouteV1ErrorResponseTest {
         given().queryParam("playerId", Generator.genInvalidPlayerId().sample())
                 .when().get("/v1/balance")
                 .then()
-                .statusCode(404);
+                .statusCode(400);
     }
 
 }

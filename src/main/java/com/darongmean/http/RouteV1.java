@@ -48,8 +48,8 @@ public class RouteV1 {
                     description = "Current balance of the player",
                     content = @Content(schema = @Schema(implementation = BalanceResponse.class))),
             @APIResponse(
-                    responseCode = "404",
-                    description = "No balance transaction found",
+                    responseCode = "400",
+                    description = "The request is invalid",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response getBalance(@BeanParam BalanceRequest balanceRequest) {
         GetBalance getBalance = new GetBalance(tBalanceTransactionRepository);
@@ -57,7 +57,7 @@ public class RouteV1 {
 
         if (getBalance.hasError()) {
             ErrorResponse err = getBalance.getErrorResponse();
-            err.setStatus(404);
+            err.setStatus(400);
             return Response.status(err.getStatus()).entity(err).build();
         }
 
@@ -66,7 +66,7 @@ public class RouteV1 {
 
     @GET
     @Path("/transaction")
-    @Operation(summary = "Get transaction history of a player")
+    @Operation(summary = "Get transaction history of a player", description = "Get all the transactions of the player")
     @APIResponse(responseCode = "200", description = "Transaction history of the player")
     public HistoryResponse getTransaction(@BeanParam HistoryRequest historyRequest) {
         GetHistory getHistory = new GetHistory(tBalanceTransactionRepository);
@@ -87,7 +87,7 @@ public class RouteV1 {
                     content = @Content(schema = @Schema(implementation = CreditResponse.class))),
             @APIResponse(
                     responseCode = "400",
-                    description = "The transaction rejected",
+                    description = "The request is rejected",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response postCredit(CreditRequest creditRequest) {
         creditRequest.setTraceId(getTraceId());
@@ -117,7 +117,7 @@ public class RouteV1 {
                     content = @Content(schema = @Schema(implementation = DebitResponse.class))),
             @APIResponse(
                     responseCode = "400",
-                    description = "The transaction rejected",
+                    description = "The request is rejected",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
     public Response postDedit(DebitRequest debitRequest) {
         debitRequest.setTraceId(getTraceId());
