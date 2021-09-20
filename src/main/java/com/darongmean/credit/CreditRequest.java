@@ -23,16 +23,8 @@ public class CreditRequest {
     private BigDecimal transactionAmount;
     @JsonIgnore
     private String traceId;
-
-    @Override
-    public String toString() {
-        return "CreditRequest{" +
-                "playerId='" + getPlayerId() + '\'' +
-                ", transactionId='" + getTransactionId() + '\'' +
-                ", transactionAmount=" + getTransactionAmount() +
-                ", traceId='" + getTraceId() + '\'' +
-                '}';
-    }
+    @JsonIgnore
+    private String idempotencyKey;
 
     public String getPlayerId() {
         return playerId;
@@ -64,5 +56,13 @@ public class CreditRequest {
 
     public void setTraceId(String traceId) {
         this.traceId = traceId;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 }

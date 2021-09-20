@@ -3,6 +3,8 @@ package com.darongmean.credit;
 import com.darongmean.common.ErrorResponse;
 import com.darongmean.h2db.TBalanceTransaction;
 import com.darongmean.h2db.TBalanceTransactionRepository;
+import com.darongmean.idempotency.IdempotencyCache;
+import com.darongmean.idempotency.IdempotencyKey;
 import io.beanmapper.BeanMapper;
 import io.beanmapper.config.BeanMapperBuilder;
 
@@ -15,22 +17,35 @@ import java.util.stream.Collectors;
 
 public class IncreaseBalance {
 
-    private static final BeanMapper beanMapper = new BeanMapperBuilder().build();
+        private static final BeanMapper beanMapper = new BeanMapperBuilder().build();
+    private static final String CREDIT_TRANSACTION_TYPE = "credit";
     private final TBalanceTransactionRepository tBalanceTransactionRepository;
     private final Validator validator;
+    private final IdempotencyCache idempotencyCache;
     private TBalanceTransaction newBalanceTransaction;
     private CreditResponse creditResponse;
     private ErrorResponse errorResponse;
 
-    public IncreaseBalance(TBalanceTransactionRepository tBalanceTransactionRepository, Validator validator) {
+    public IncreaseBalance(TBalanceTransactionRepository tBalanceTransactionRepository, Validator validator, IdempotencyCache idempotencyCache) {
         this.tBalanceTransactionRepository = tBalanceTransactionRepository;
         this.validator = validator;
+        this.idempotencyCache = idempotencyCache;
     }
 
     public void execute(CreditRequest creditRequest) {
         if (inputHasError(creditRequest)) {
             errorResponse = initErrorResponse(creditRequest);
             return;
+        }
+
+        IdempotencyKey idempotencyKey = beanMapper.map(creditRequest, IdempotencyKey.class);
+        idempotencyKey.setTransactionType(CREDIT_TRANSACTION_TYPE);
+        if (idempotencyCache.containsKey(idempotencyKey)) {
+            TBalanceTransaction cachedTransaction = tBalanceTransactionRepository.findById(idempotencyCache.get(idempotencyKey));
+            if (cachedTransaction != null) {
+                creditResponse = beanMapper.map(cachedTransaction, CreditResponse.class);
+                return;
+            }
         }
 
         long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(creditRequest.getTransactionId());
@@ -50,6 +65,7 @@ public class IncreaseBalance {
         }
 
         tBalanceTransactionRepository.persist(newBalanceTransaction);
+        idempotencyCache.put(idempotencyKey, newBalanceTransaction.getBalanceTransactionPk());
         creditResponse = beanMapper.map(newBalanceTransaction, CreditResponse.class);
     }
 
@@ -81,7 +97,7 @@ public class IncreaseBalance {
 
     private TBalanceTransaction initBalanceTransaction(CreditRequest creditRequest) {
         TBalanceTransaction balanceTransaction = beanMapper.map(creditRequest, TBalanceTransaction.class);
-        balanceTransaction.setTransactionType("credit");
+        balanceTransaction.setTransactionType(CREDIT_TRANSACTION_TYPE);
         return balanceTransaction;
     }
 

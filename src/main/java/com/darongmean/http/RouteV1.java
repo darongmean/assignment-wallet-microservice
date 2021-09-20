@@ -11,6 +11,7 @@ import com.darongmean.debit.DebitRequest;
 import com.darongmean.debit.DebitResponse;
 import com.darongmean.debit.DecreaseBalance;
 import com.darongmean.h2db.TBalanceTransactionRepository;
+import com.darongmean.idempotency.IdempotencyCache;
 import com.darongmean.transaction.GetHistory;
 import com.darongmean.transaction.HistoryRequest;
 import com.darongmean.transaction.HistoryResponse;
@@ -38,6 +39,8 @@ public class RouteV1 {
     Validator validator;
     @Inject
     Tracer tracer;
+    @Inject
+    IdempotencyCache idempotencyCache;
 
     @GET
     @Path("/balance")
@@ -79,7 +82,8 @@ public class RouteV1 {
     @Transactional
     @Operation(
             summary = "Submit credit transaction of a player",
-            description = "Adding fund to the balance of a player")
+            description = "Adding fund to the balance of a player." +
+                    "\nPass a unique value with Idempotency-Key header to be able to retry the request.")
     @APIResponses(value = {
             @APIResponse(
                     responseCode = "200",
@@ -89,10 +93,11 @@ public class RouteV1 {
                     responseCode = "400",
                     description = "The request is rejected",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
-    public Response postCredit(CreditRequest creditRequest) {
+    public Response postCredit(@HeaderParam("Idempotency-Key") String idempotencyKey, CreditRequest creditRequest) {
         creditRequest.setTraceId(getTraceId());
+        creditRequest.setIdempotencyKey(idempotencyKey);
 
-        IncreaseBalance increaseBalance = new IncreaseBalance(tBalanceTransactionRepository, validator);
+        IncreaseBalance increaseBalance = new IncreaseBalance(tBalanceTransactionRepository, validator, idempotencyCache);
         increaseBalance.execute(creditRequest);
 
         if (increaseBalance.hasError()) {

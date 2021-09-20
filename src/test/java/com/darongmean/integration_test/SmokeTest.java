@@ -8,6 +8,7 @@ import com.darongmean.credit.IncreaseBalance;
 import com.darongmean.debit.DebitRequest;
 import com.darongmean.debit.DecreaseBalance;
 import com.darongmean.h2db.TBalanceTransactionRepository;
+import com.darongmean.idempotency.IdempotencyCache;
 import io.beanmapper.BeanMapper;
 import io.beanmapper.config.BeanMapperBuilder;
 import io.quarkus.test.TestTransaction;
@@ -35,6 +36,8 @@ public class SmokeTest {
     Validator validator;
 
     BeanMapper beanMapper = new BeanMapperBuilder().build();
+    @Inject
+    IdempotencyCache idempotencyCache;
 
     @RepeatedTest(100)
     @TestTransaction
@@ -78,7 +81,7 @@ public class SmokeTest {
             creditRequest.setPlayerId(playerId);
 
             if ("credit".equals(transactionTypes.get(i))) {
-                IncreaseBalance increaseBalance = new IncreaseBalance(tBalanceTransactionRepository, validator);
+                IncreaseBalance increaseBalance = new IncreaseBalance(tBalanceTransactionRepository, validator, idempotencyCache);
                 increaseBalance.execute(creditRequest);
                 if (!increaseBalance.hasError()) {
                     totalCredit = totalCredit.add(increaseBalance.getNewBalanceTransaction().getTransactionAmount());

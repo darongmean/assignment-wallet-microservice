@@ -64,7 +64,8 @@ public class Generator {
         return genNonEmptyString();
     }
 
-    private static Arbitrary<String> genNonEmptyString() {
+    @Provide
+    public static Arbitrary<String> genNonEmptyString() {
         return Arbitraries.strings().ofMinLength(1).ofMaxLength(255).filter(v -> v.trim().length() > 0);
     }
 
@@ -79,16 +80,18 @@ public class Generator {
                 genPlayerId(),
                 genTransactionAmount(),
                 genTransactionId(),
-                Arbitraries.strings()
+                Arbitraries.strings().injectNull(0.2),
+                Arbitraries.strings().injectNull(0.2)
         ).as(Generator::newCreditRequest);
     }
 
-    public static CreditRequest newCreditRequest(String playerId, BigDecimal transactionAmount, String transactionId, String traceId) {
+    public static CreditRequest newCreditRequest(String playerId, BigDecimal transactionAmount, String transactionId, String traceId, String idempotencyKey) {
         CreditRequest request = new CreditRequest();
         request.setPlayerId(playerId);
         request.setTransactionAmount(transactionAmount);
         request.setTransactionId(transactionId);
         request.setTraceId(traceId);
+        request.setIdempotencyKey(idempotencyKey);
 
         return request;
     }
