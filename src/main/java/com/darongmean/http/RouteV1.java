@@ -114,7 +114,8 @@ public class RouteV1 {
     @Transactional
     @Operation(
             summary = "Submit debit transaction of a player",
-            description = "Removing fund from the balance of a player")
+            description = "Removing fund from the balance of a player." +
+                    "\nPass a unique value with Idempotency-Key header to be able to retry the request.")
     @APIResponses(value = {
             @APIResponse(
                     responseCode = "200",
@@ -124,10 +125,11 @@ public class RouteV1 {
                     responseCode = "400",
                     description = "The request is rejected",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))})
-    public Response postDedit(DebitRequest debitRequest) {
+    public Response postDedit(@HeaderParam("Idempotency-Key") String idempotencyKey, DebitRequest debitRequest) {
         debitRequest.setTraceId(getTraceId());
+        debitRequest.setIdempotencyKey(idempotencyKey);
 
-        DecreaseBalance decreaseBalance = new DecreaseBalance(tBalanceTransactionRepository, validator);
+        DecreaseBalance decreaseBalance = new DecreaseBalance(tBalanceTransactionRepository, validator, idempotencyCache);
         decreaseBalance.execute(debitRequest);
 
         if (decreaseBalance.hasError()) {

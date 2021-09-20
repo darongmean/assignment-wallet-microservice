@@ -3,6 +3,8 @@ package com.darongmean.debit;
 import com.darongmean.common.ErrorResponse;
 import com.darongmean.h2db.TBalanceTransaction;
 import com.darongmean.h2db.TBalanceTransactionRepository;
+import com.darongmean.idempotency.IdempotencyCache;
+import com.darongmean.idempotency.IdempotencyKey;
 import io.beanmapper.BeanMapper;
 import io.beanmapper.config.BeanMapperBuilder;
 
@@ -15,22 +17,35 @@ import java.util.stream.Collectors;
 
 public class DecreaseBalance {
     private static final BeanMapper beanMapper = new BeanMapperBuilder().build();
+    private static final String DEBIT_TRANSACTION_TYPE = "debit";
     private final TBalanceTransactionRepository tBalanceTransactionRepository;
     private final Validator validator;
+    private final IdempotencyCache idempotencyCache;
     private ErrorResponse errorResponse;
     private DebitResponse debitResponse;
     private TBalanceTransaction newBalanceTransaction;
 
-    public DecreaseBalance(TBalanceTransactionRepository tBalanceTransactionRepository, Validator validator) {
+    public DecreaseBalance(TBalanceTransactionRepository tBalanceTransactionRepository, Validator validator, IdempotencyCache idempotencyCache) {
 
         this.tBalanceTransactionRepository = tBalanceTransactionRepository;
         this.validator = validator;
+        this.idempotencyCache = idempotencyCache;
     }
 
     public void execute(DebitRequest debitRequest) {
         if (inputHasError(debitRequest)) {
             errorResponse = initErrorResponse(debitRequest);
             return;
+        }
+
+        IdempotencyKey idempotencyKey = beanMapper.map(debitRequest, IdempotencyKey.class);
+        idempotencyKey.setTransactionType(DEBIT_TRANSACTION_TYPE);
+        if (idempotencyCache.containsKey(idempotencyKey)) {
+            TBalanceTransaction cachedTransaction = tBalanceTransactionRepository.findById(idempotencyCache.get(idempotencyKey));
+            if (cachedTransaction != null) {
+                debitResponse = beanMapper.map(cachedTransaction, DebitResponse.class);
+                return;
+            }
         }
 
         long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(debitRequest.getTransactionId());
@@ -55,6 +70,7 @@ public class DecreaseBalance {
         }
 
         tBalanceTransactionRepository.persist(newBalanceTransaction);
+        idempotencyCache.put(idempotencyKey, newBalanceTransaction.getBalanceTransactionPk());
         debitResponse = beanMapper.map(newBalanceTransaction, DebitResponse.class);
     }
 
@@ -87,14 +103,13 @@ public class DecreaseBalance {
 
     private TBalanceTransaction initBalanceTransaction(DebitRequest debitRequest) {
         TBalanceTransaction balanceTransaction = beanMapper.map(debitRequest, TBalanceTransaction.class);
-        balanceTransaction.setTransactionType("debit");
+        balanceTransaction.setTransactionType(DEBIT_TRANSACTION_TYPE);
         return balanceTransaction;
     }
 
     private void removeFund(TBalanceTransaction newTransaction, TBalanceTransaction prevTransaction, BigDecimal amount) {
         newTransaction.setTotalBalance(prevTransaction.getTotalBalance().subtract(amount));
     }
-
 
     public ErrorResponse getErrorResponse() {
         return errorResponse;

@@ -3,6 +3,7 @@ package com.darongmean.debit;
 import com.darongmean.common.Generator;
 import com.darongmean.h2db.TBalanceTransaction;
 import com.darongmean.h2db.TBalanceTransactionRepository;
+import com.darongmean.idempotency.IdempotencyCache;
 import net.jqwik.api.*;
 import net.jqwik.api.constraints.LongRange;
 import net.jqwik.api.constraints.Size;
@@ -25,8 +26,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class DecreaseBalanceTest extends Generator {
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     TBalanceTransactionRepository mockRepo;
+    IdempotencyCache mockIdempotencyCache;
 
-    private static DebitRequest newDebitRequest(String playerId, BigDecimal transactionAmount, String transactionId, String traceId) {
+    private static DebitRequest newDebitRequest(String playerId, BigDecimal transactionAmount, String transactionId, String traceId, String idempotencyKey) {
         DebitRequest request = new DebitRequest();
         request.setPlayerId(playerId);
         request.setTransactionAmount(transactionAmount);
@@ -39,6 +41,7 @@ class DecreaseBalanceTest extends Generator {
     @BeforeTry
     void setUp() {
         mockRepo = Mockito.mock(TBalanceTransactionRepository.class);
+        mockIdempotencyCache = Mockito.mock(IdempotencyCache.class);
     }
 
     @Property
@@ -47,14 +50,20 @@ class DecreaseBalanceTest extends Generator {
             @ForAll BigDecimal transactionAmount,
             @ForAll String transactionId,
             @ForAll String traceId,
+            @ForAll String idempotencyKey,
+            @ForAll boolean containsIdempotencyKey,
             @ForAll("genTBalanceTransaction") @WithNull(0.4) TBalanceTransaction prevTransaction,
+            @ForAll("genTBalanceTransaction") @WithNull(0.4) TBalanceTransaction otherPrevTransaction,
             @ForAll long countTransactionId) {
-        DebitRequest request = newDebitRequest(playerId, transactionAmount, transactionId, traceId);
+        DebitRequest request = newDebitRequest(playerId, transactionAmount, transactionId, traceId, idempotencyKey);
 
+        Mockito.when(mockIdempotencyCache.containsKey(Mockito.any())).thenReturn(containsIdempotencyKey);
+
+        Mockito.when(mockRepo.findById(Mockito.any())).thenReturn(otherPrevTransaction);
         Mockito.when(mockRepo.findLastByPlayerId(playerId)).thenReturn(prevTransaction);
         Mockito.when(mockRepo.countByTransactionId(transactionId)).thenReturn(countTransactionId);
 
-        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
         decreaseBalance.execute(request);
     }
 
@@ -68,7 +77,7 @@ class DecreaseBalanceTest extends Generator {
         request.setTransactionId(invalidTransactionId);
         request.setTransactionAmount(invalidTransactionAmount);
 
-        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
         decreaseBalance.execute(request);
 
         assertNotNull(decreaseBalance.getErrorResponse());
@@ -78,7 +87,7 @@ class DecreaseBalanceTest extends Generator {
 
     @Property
     void testDecreaseBalanceGivenNeverDoneTransactionBefore(@ForAll("genDebitRequest") DebitRequest debitRequest) {
-        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
         decreaseBalance.execute(debitRequest);
 
         assertNotNull(decreaseBalance.getErrorResponse());
@@ -99,7 +108,7 @@ class DecreaseBalanceTest extends Generator {
 
         Mockito.when(mockRepo.findLastByPlayerId(debitRequest.getPlayerId())).thenReturn(prevBalanceTransaction);
 
-        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
         decreaseBalance.execute(debitRequest);
 
         assertNotNull(decreaseBalance.getDebitResponse());
@@ -119,7 +128,7 @@ class DecreaseBalanceTest extends Generator {
             @ForAll @LongRange(min = 1) long countTransactionId) {
         Mockito.when(mockRepo.countByTransactionId(debitRequest.getTransactionId())).thenReturn(countTransactionId);
 
-        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
         decreaseBalance.execute(debitRequest);
 
         assertNull(decreaseBalance.getDebitResponse());
@@ -133,11 +142,67 @@ class DecreaseBalanceTest extends Generator {
             @ForAll("genTBalanceTransaction") TBalanceTransaction prevBalanceTransaction) {
         Mockito.when(mockRepo.findLastByPlayerId(debitRequest.getPlayerId())).thenReturn(prevBalanceTransaction);
 
-        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator);
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
         decreaseBalance.execute(debitRequest);
 
         assertTrue(decreaseBalance.hasError() ||
                 BigDecimal.ZERO.compareTo(decreaseBalance.getNewBalanceTransaction().getTransactionAmount()) <= 0);
+    }
+
+    @Property
+    void testDecreaseBalanceGivenIdempotencyKey(
+            @ForAll String idempotencyKey,
+            @ForAll("genDebitRequest") DebitRequest debitRequest,
+            @ForAll("genTBalanceTransaction") TBalanceTransaction prevTransaction,
+            @ForAll long countTransactionId) {
+        // assume previous transaction is cached
+        debitRequest.setIdempotencyKey(idempotencyKey);
+        Mockito.when(mockIdempotencyCache.containsKey(Mockito.any())).thenReturn(true);
+
+        Mockito.when(mockRepo.findById(Mockito.any())).thenReturn(prevTransaction);
+        Mockito.when(mockRepo.countByTransactionId(Mockito.any())).thenReturn(countTransactionId);
+        Mockito.when(mockRepo.findLastByPlayerId(Mockito.any())).thenReturn(prevTransaction);
+
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
+        decreaseBalance.execute(debitRequest);
+
+        assertNotNull(decreaseBalance.getDebitResponse());
+        assertNull(decreaseBalance.getErrorResponse());
+        assertFalse(decreaseBalance.hasError());
+        assertEquals(prevTransaction.getTotalBalance(), decreaseBalance.getDebitResponse().getTotalBalance());
+    }
+
+    @Property
+    void testDecreaseBalanceGivenIdempotencyKeyIsStaled(
+            @ForAll String idempotencyKey,
+            @ForAll @UniqueElements @Size(value = 2) List<@From("genTransactionId") String> transactionIds,
+            @ForAll("genDebitRequest") DebitRequest debitRequest,
+            @ForAll("genTBalanceTransaction") TBalanceTransaction prevBalanceTransaction) {
+        // assume previous transaction is cached
+        debitRequest.setIdempotencyKey(idempotencyKey);
+        Mockito.when(mockIdempotencyCache.containsKey(Mockito.any())).thenReturn(true);
+        // assume the cache is stale
+        Mockito.when(mockRepo.findById(Mockito.any())).thenReturn(null);
+        // arrange to have different transactionIds
+        debitRequest.setTransactionId(transactionIds.get(0));
+        prevBalanceTransaction.setTransactionId(transactionIds.get(1));
+        // arrange so that totalBalance is positive
+        prevBalanceTransaction.setTotalBalance(prevBalanceTransaction.getTotalBalance().add(debitRequest.getTransactionAmount()));
+
+        Mockito.when(mockRepo.findLastByPlayerId(debitRequest.getPlayerId())).thenReturn(prevBalanceTransaction);
+
+        DecreaseBalance decreaseBalance = new DecreaseBalance(mockRepo, validator, mockIdempotencyCache);
+        decreaseBalance.execute(debitRequest);
+
+        assertNotNull(decreaseBalance.getDebitResponse());
+        assertNull(decreaseBalance.getErrorResponse());
+        assertFalse(decreaseBalance.hasError());
+
+        assertGenerateValidData(decreaseBalance.getNewBalanceTransaction());
+
+        assertEquals(prevBalanceTransaction.getTotalBalance().subtract(debitRequest.getTransactionAmount()),
+                decreaseBalance.getDebitResponse().getTotalBalance());
+        assertEquals("debit", decreaseBalance.getNewBalanceTransaction().getTransactionType());
     }
 
     @Provide
@@ -146,8 +211,9 @@ class DecreaseBalanceTest extends Generator {
                 genPlayerId(),
                 genTransactionAmount(),
                 genTransactionId(),
-                Arbitraries.strings()
-        ).as(DecreaseBalanceTest::newDebitRequest);
+                Arbitraries.strings().injectNull(0.2),
+                Arbitraries.strings().injectNull(0.2)
+        ).as((DecreaseBalanceTest::newDebitRequest));
     }
 
     private void assertGenerateValidData(TBalanceTransaction tBalanceTransaction) {

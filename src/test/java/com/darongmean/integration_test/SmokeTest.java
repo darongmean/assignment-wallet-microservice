@@ -90,7 +90,7 @@ public class SmokeTest {
                 errors.add(increaseBalance.hasError());
             }
             if ("debit".equals(transactionTypes.get(i))) {
-                DecreaseBalance decreaseBalance = new DecreaseBalance(tBalanceTransactionRepository, validator);
+                DecreaseBalance decreaseBalance = new DecreaseBalance(tBalanceTransactionRepository, validator, idempotencyCache);
                 decreaseBalance.execute(beanMapper.map(creditRequest, DebitRequest.class));
                 if (!decreaseBalance.hasError()) {
                     totalDebit = totalDebit.add(decreaseBalance.getNewBalanceTransaction().getTransactionAmount());
