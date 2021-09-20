@@ -23,7 +23,7 @@ public class GetBalance {
         TBalanceTransaction latestBalance = tBalanceTransactionRepository.findLastByPlayerId(balanceRequest.playerId);
         if (latestBalance == null) {
             errorResponse = new ErrorResponse();
-            errorResponse.detail = List.of("playerId must be valid");
+            errorResponse.setDetail(List.of("playerId must be valid"));
             return;
         }
 

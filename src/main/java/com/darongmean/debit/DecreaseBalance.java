@@ -36,14 +36,14 @@ public class DecreaseBalance {
         long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(debitRequest.transactionId);
         if (countTransactionIdUsed > 0) {
             errorResponse = new ErrorResponse();
-            errorResponse.detail = List.of("transactionId must be unique");
+            errorResponse.setDetail(List.of("transactionId must be unique"));
             return;
         }
 
         TBalanceTransaction prevTransaction = tBalanceTransactionRepository.findLastByPlayerId(debitRequest.playerId);
         if (prevTransaction == null) {
             errorResponse = new ErrorResponse();
-            errorResponse.detail = List.of("totalBalance must be positive");
+            errorResponse.setDetail(List.of("totalBalance must be positive"));
             return;
         }
 
@@ -62,9 +62,9 @@ public class DecreaseBalance {
     private ErrorResponse initErrorResponse(TBalanceTransaction newBalanceTransaction) {
         Set<ConstraintViolation<TBalanceTransaction>> violations = validator.validate(newBalanceTransaction);
         ErrorResponse error = new ErrorResponse();
-        error.detail = violations.stream()
+        error.setDetail(violations.stream()
                 .map(cv -> cv.getPropertyPath() + " " + cv.getMessage())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         return error;
     }
 
@@ -75,9 +75,9 @@ public class DecreaseBalance {
     private ErrorResponse initErrorResponse(DebitRequest debitRequest) {
         Set<ConstraintViolation<DebitRequest>> violations = validator.validate(debitRequest);
         ErrorResponse error = new ErrorResponse();
-        error.detail = violations.stream()
+        error.setDetail(violations.stream()
                 .map(cv -> cv.getPropertyPath() + " " + cv.getMessage())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         return error;
     }
 

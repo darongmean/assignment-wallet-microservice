@@ -39,8 +39,8 @@ public class RouteV1 {
 
         if (getBalance.hasError()) {
             ErrorResponse err = getBalance.getErrorResponse();
-            err.status = 404;
-            return Response.status(err.status).entity(err).build();
+            err.setStatus(404);
+            return Response.status(err.getStatus()).entity(err).build();
         }
 
         return Response.ok(getBalance.getBalanceResponse()).build();
@@ -65,8 +65,8 @@ public class RouteV1 {
 
         if (increaseBalance.hasError()) {
             ErrorResponse err = increaseBalance.getErrorResponse();
-            err.status = 400;
-            return Response.status(err.status).entity(err).build();
+            err.setStatus(400);
+            return Response.status(err.getStatus()).entity(err).build();
         }
 
         return Response.ok(increaseBalance.getCreditResponse()).build();
@@ -83,8 +83,8 @@ public class RouteV1 {
 
         if (decreaseBalance.hasError()) {
             ErrorResponse err = decreaseBalance.getErrorResponse();
-            err.status = 400;
-            return Response.status(err.status).entity(err).build();
+            err.setStatus(400);
+            return Response.status(err.getStatus()).entity(err).build();
         }
 
         return Response.ok(decreaseBalance.getDebitResponse()).build();

@@ -36,7 +36,7 @@ public class IncreaseBalance {
         long countTransactionIdUsed = tBalanceTransactionRepository.countByTransactionId(creditRequest.transactionId);
         if (countTransactionIdUsed > 0) {
             errorResponse = new ErrorResponse();
-            errorResponse.detail = List.of("transactionId must be unique");
+            errorResponse.setDetail(List.of("transactionId must be unique"));
             return;
         }
 
@@ -56,9 +56,9 @@ public class IncreaseBalance {
     private ErrorResponse initErrorResponse(TBalanceTransaction newBalanceTransaction) {
         Set<ConstraintViolation<TBalanceTransaction>> violations = validator.validate(newBalanceTransaction);
         ErrorResponse error = new ErrorResponse();
-        error.detail = violations.stream()
+        error.setDetail(violations.stream()
                 .map(cv -> cv.getPropertyPath() + " " + cv.getMessage())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         return error;
     }
 
@@ -69,9 +69,9 @@ public class IncreaseBalance {
     private ErrorResponse initErrorResponse(CreditRequest creditRequest) {
         Set<ConstraintViolation<CreditRequest>> violations = validator.validate(creditRequest);
         ErrorResponse error = new ErrorResponse();
-        error.detail = violations.stream()
+        error.setDetail(violations.stream()
                 .map(cv -> cv.getPropertyPath() + " " + cv.getMessage())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         return error;
     }
 
