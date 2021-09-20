@@ -31,16 +31,19 @@ $ ./mvnw compile quarkus:dev
 ```
 
 Swagger UI will be available at http://localhost:8080/q/swagger-ui.
-
 Jaeger UI will be available at http://localhost:16686.
+
+If you have any problems, try cleaning with `./mvnw clean` command.
 
 ## How to test
 
 Run the following command.
 
 ```shell
-$ ./mvnw clean test
+$ ./mvnw test
 ```
+
+If you have any problems, try cleaning with `./mvnw clean` command.
 
 ## Swagger UI
 
