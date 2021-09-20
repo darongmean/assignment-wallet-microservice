@@ -18,7 +18,7 @@ public class GetHistory {
 
     public void execute(HistoryRequest historyRequest) {
         List<TBalanceTransaction> tBalanceTransactions = tBalanceTransactionRepository.listByPlayerId(historyRequest.getPlayerId());
-        historyResponse.data = beanMapper.map(tBalanceTransactions, HistoryItemResponse.class);
+        historyResponse.setData(beanMapper.map(tBalanceTransactions, HistoryItemResponse.class));
     }
 
     public HistoryResponse getHistoryResponse() {

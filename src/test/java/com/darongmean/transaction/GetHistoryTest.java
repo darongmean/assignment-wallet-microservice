@@ -50,7 +50,7 @@ class GetHistoryTest extends Generator {
 
         assertNotNull(getHistory.getHistoryResponse());
 
-        assertEquals(playerId, getHistory.getHistoryResponse().data.get(0).playerId);
-        assertEquals(playerTransactions.size(), getHistory.getHistoryResponse().data.size());
+        assertEquals(playerId, getHistory.getHistoryResponse().getData().get(0).playerId);
+        assertEquals(playerTransactions.size(), getHistory.getHistoryResponse().getData().size());
     }
 }
